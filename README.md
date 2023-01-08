@@ -11,23 +11,14 @@ Publish MQTT messages about thunderstorm lightning in your area using an ESP32 a
    #define REPORT_DISTURBER_DEFAULT false
    #define HOSTNAME_DEFAULT "green-mile"
    ```
-
 2. Upload the sketch to your board.
-
 3. Open the serial terminal and update your settings. The program uses [ESP32WifiCLI - A Basic CLI for WiFi setup over ESP32](https://github.com/hpsaturn/esp32-wifi-cli) so you don't commit sensitive data to GitHub. (Type ``help`` in the terminal if you get stuck)
-   
    1. Set the WiFi SSID ``setSSID "YOUR SSID"`` (You must include the quotes)
-   
    2. Set the WiFi password ``setPASW "YOUR PASW"`` (You must include the quotes)
-   
    3. Save the WiFi settings ``connect``
-   
    4. Set the MQTT broker hostname ``broker <hostname>`` (No quotes are required)
-   
    5. Reset the device by pressing the reset button
-
 4. After configuration you should move it away from you computer and other noisy RFI producing devices. You can plug it in to any standard USB phone charger or power supply that the ESP32 accepts. The user LED will light up when the sketch connects to your MQTT server.
-
 5. Publish a topic with the name ``lightning/ping`` and no payload. If the device is setup properly it will respond with a topic named ``lightning/pong`` and a payload with the number of cores in the CPU and the ESP32 model.
 
 You know what all this means. *Means you're gonna ride the lightning.*
