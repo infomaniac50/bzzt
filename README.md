@@ -4,7 +4,7 @@ Publish MQTT messages about thunderstorm lightning in your area using an ESP32 a
 
 ## Setup
 
-1. Change the following values in main.cpp. The value for the tuning capacitor needs to match your board. The hostname can be whatever you want it to be. If you add it to your DNS server the device will be addressable by hostname.
+1. Change the following values in main.cpp. The value for the tuning capacitor needs to match your sensor board. The hostname can be whatever you want it to be. If you add it to your DNS server the device will be addressable by hostname.
    
    ```cpp
    #define TUNING_CAPACITOR_DEFAULT 88
@@ -13,15 +13,19 @@ Publish MQTT messages about thunderstorm lightning in your area using an ESP32 a
    ```
 2. Upload the sketch to your board.
 3. Open the serial terminal and update your settings. The program uses [ESP32WifiCLI - A Basic CLI for WiFi setup over ESP32](https://github.com/hpsaturn/esp32-wifi-cli) so you don't commit sensitive data to GitHub. (Type ``help`` in the terminal if you get stuck)
-   1. Set the WiFi SSID ``setSSID "YOUR SSID"`` (You must include the quotes)
-   2. Set the WiFi password ``setPASW "YOUR PASW"`` (You must include the quotes)
+   1. Set the WiFi SSID ``setSSID "YOUR SSID"`` *You must include the quotes*
+   2. Set the WiFi password ``setPASW "YOUR PASW"`` *You must include the quotes*
    3. Save the WiFi settings ``connect``
-   4. Set the MQTT broker hostname ``broker <hostname>`` (No quotes are required)
+   4. Set the MQTT broker hostname ``broker <hostname>`` *Do not use quotes here*
    5. Reset the device by pressing the reset button
-4. After configuration you should move it away from you computer and other noisy RFI producing devices. You can plug it in to any standard USB phone charger or power supply that the ESP32 accepts. The user LED will light up when the sketch connects to your MQTT server.
-5. Publish a topic with the name ``lightning/ping`` and no payload. If the device is setup properly it will respond with a topic named ``lightning/pong`` and a payload with the number of cores in the CPU and the ESP32 model.
+4. After configuration you should move it away from your computer and other noisy RFI producing devices. You can plug it into any standard USB phone charger or power supply that the ESP32 accepts. The user LED will light up when the sketch connects to your MQTT server.
+5. Publish a topic with the name ``lightning/ping`` and no payload. If the device is setup properly it will respond with a topic named ``lightning/pong`` and a payload with the number of cores in the CPU and the model number of the ESP32 daughter board.
 
-You know what all this means. *Means you're gonna ride the lightning.*
+After completing setup, you just have to wait for a storm to show up or buy a [Digital Lightning Sensor Tester Arduino Shield for AS3935](https://www.playingwithfusion.com/productview.php?pdid=55&catid=1012). The device will publish messages about stormfront distance and a unit-less *energy* metric to your MQTT server. You can consume those messages from another device and post them to Twitter or draw something on your Magic Mirror, etc.
+
+
+*You've been declared competent, son, 'know what that means? 'Means you gonna ride the lightning.*  
+    -- The Green Mile (1999)
 
 ## Parts
 
