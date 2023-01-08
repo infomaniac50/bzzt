@@ -11,6 +11,11 @@
 #include <ArduinoJson.h>
 #include <StreamUtils.h>
 
+// The calibration value for my board is 88 picoFarads.
+#define TUNING_CAPACITOR_DEFAULT 88
+#define REPORT_DISTURBER_DEFAULT false
+#define HOSTNAME_DEFAULT "green-mile"
+
 SensorSettings settings;
 
 /*
@@ -27,7 +32,7 @@ LightningSensor sensor;
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
 
-const String systemHostname("green-mile");
+const String systemHostname(HOSTNAME_DEFAULT);
 
 auto timer = timer_create_default(); // create a timer with default settings
 
@@ -235,9 +240,8 @@ void setup()
   pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
   digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
 
-  // The calibration value for my board is 88 picoFarads.
-  settings.tuningCapacitor = 88;
-  settings.reportDisturber = false;
+  settings.tuningCapacitor = TUNING_CAPACITOR_DEFAULT;
+  settings.reportDisturber = REPORT_DISTURBER_DEFAULT;
 
   sensor.begin(settings);
 
