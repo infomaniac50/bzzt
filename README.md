@@ -1,6 +1,6 @@
 # Green Mile
 
-Publish MQTT messages about lightning sensor data using an ESP32 and a Digital Lightning Sensor AS3935 from www.playingwithfusion.com
+Publish MQTT messages about thunderstorm lightning in your area using an ESP32 and a Digital Lightning Sensor AS3935 from www.playingwithfusion.com
 
 ## Setup
 
