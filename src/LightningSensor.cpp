@@ -4,13 +4,23 @@
 #include "SparkFun_AS3935.h"
 #include "LightningSensor.h"
 
+/*
+  Qwiic Digital Lightning Sensor AS3935 SPI and I2C Breakout Kit
+  https://www.playingwithfusion.com/productview.php?pdid=135&catid=1012
+
+  **Product Description**
+  Breakout board for the AS3935 digital lightning sensor based on the AMS reference design. Includes specially tuned antenna, SPI or I2C interfacing, and a wide 2.4V to 5.5V standard operating range. This innovative sensor is designed to interface with most current development systems and boards, including all current Arduino modules. The breakout board features an inductor (antenna) specially designed for this application, and the board ships fully calibrated. This ensures that you don’t have to write a massive back-end to support low-level IC calibration, just focus on your final application!
+
+  We store calibration values for each board shipped. The calibration value (in pF) is written on the lower corner of the product label. This information can also be provided at your request by contacting Technical Support and referencing your original order number.
+*/
+
 // 0x03 is default, but the address can also be 0x02, or 0x01.
 // Adjust the address jumpers on the underside of the product.
-#define AS3935_ADDR 0x03
+const int AS3935_ADDR = 0x03;
 
 // Interrupt pin for lightning detection
 // enable interrupt HS1_DATA6/VSPICS0/GPIO5/SCK
-#define INTERRUPT_PIN 5
+const int INTERRUPT_PIN = 5;
 
 // If you're using I-squared-C then keep the following line. Address is set to default.
 SparkFun_AS3935 lightning(AS3935_ADDR);

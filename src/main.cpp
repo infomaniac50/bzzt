@@ -12,27 +12,15 @@
 #include <StreamUtils.h>
 
 // The calibration value for my board is 88 picoFarads.
-#define TUNING_CAPACITOR_DEFAULT 88
-#define REPORT_DISTURBER_DEFAULT false
-#define HOSTNAME_DEFAULT "green-mile"
+const int TUNING_CAPACITOR_DEFAULT = 88;
+const bool REPORT_DISTURBER_DEFAULT = false;
+const char* HOSTNAME_DEFAULT = "green-mile";
+const String SYSTEM_HOSTNAME(HOSTNAME_DEFAULT);
 
 SensorSettings settings;
-
-/*
-  Qwiic Digital Lightning Sensor AS3935 SPI and I2C Breakout Kit
-  https://www.playingwithfusion.com/productview.php?pdid=135&catid=1012
-
-**Product Description**
-  Breakout board for the AS3935 digital lightning sensor based on the AMS reference design. Includes specially tuned antenna, SPI or I2C interfacing, and a wide 2.4V to 5.5V standard operating range. This innovative sensor is designed to interface with most current development systems and boards, including all current Arduino modules. The breakout board features an inductor (antenna) specially designed for this application, and the board ships fully calibrated. This ensures that you don’t have to write a massive back-end to support low-level IC calibration, just focus on your final application!
-
-  We store calibration values for each board shipped. The calibration value (in pF) is written on the lower corner of the product label. This information can also be provided at your request by contacting Technical Support and referencing your original order number.
-*/
 LightningSensor sensor;
-
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
-
-const String systemHostname(HOSTNAME_DEFAULT);
 
 auto timer = timer_create_default(); // create a timer with default settings
 
@@ -77,7 +65,7 @@ bool checkSensor(void *)
 
   if (interrupted == 1)
   {
-    if (mqtt.connect(systemHostname.c_str()))
+    if (mqtt.connect(SYSTEM_HOSTNAME.c_str()))
     {
       StaticJsonDocument<256> doc;
 
@@ -155,7 +143,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
             mqtt.setCallback(onPubSubCallback);
           }
 
-          if (mqtt.connect(systemHostname.c_str()) && mqtt.subscribe("lightning/ping"))
+          if (mqtt.connect(SYSTEM_HOSTNAME.c_str()) && mqtt.subscribe("lightning/ping"))
           {
             setErrorStatus(false);
           }
@@ -181,8 +169,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
       Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
     }
 
-    void onNewWifi(String ssid, String passw) {
-    }
+    void onNewWifi(String ssid, String passw) { }
 };
 
 void reboot(String opts)
@@ -208,7 +195,7 @@ void setup()
 
   pinMode(LED_BUILTIN, OUTPUT);
 
-  WiFi.hostname(systemHostname);
+  WiFi.hostname(SYSTEM_HOSTNAME);
 
   Serial.flush(); // Only for showing the message on serial
   delay(1000);
