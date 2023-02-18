@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <atomic>
 #include <SPI.h>
 #include <Wire.h>
 #include "SparkFun_AS3935.h"
@@ -26,19 +27,19 @@ const int INTERRUPT_PIN = 5;
 SparkFun_AS3935 lightning(AS3935_ADDR);
 
 // interrupt trigger global var
-volatile std::int8_t AS3935_ISR_Trig = 0;
+volatile std::atomic<bool> AS3935_ISR_Trig(false);
 
 // this is irq handler for AS3935 interrupts, has to return void and take no arguments
 // always make code in interrupt handlers fast and short
 void ARDUINO_ISR_ATTR AS3935_ISR()
 {
-  AS3935_ISR_Trig = 1;
+  AS3935_ISR_Trig = true;
 }
 
 void LightningSensor::attachInterruptPin()
 {
   // When lightning is detected the interrupt pin goes HIGH.
-  AS3935_ISR_Trig = 0; // clear trigger
+  AS3935_ISR_Trig = false; // clear trigger
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), AS3935_ISR, RISING);
 }
 
@@ -124,10 +125,15 @@ void LightningSensor::setSensorSettings(SensorSettings sensorSettings)
   // Serial.println("Error recalibrating internal osciallator on wake up.");
 }
 
-std::int8_t LightningSensor::getSensorEvent(SensorEvent *sensorEvent)
+bool LightningSensor::getSensorEvent(SensorEvent *sensorEvent)
 {
-  std::uint8_t interrupted = AS3935_ISR_Trig;
-  AS3935_ISR_Trig = 0;
+  // Atomically exchange false with the previous value.
+  // The previous value is stored in a local variable.
+  bool interrupted = AS3935_ISR_Trig.exchange(false);
+
+  if (!interrupted) {
+    return false;
+  }
 
   // Hardware has alerted us to an event, now we read the interrupt register
   // to see exactly what it is.

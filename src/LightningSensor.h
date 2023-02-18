@@ -13,6 +13,6 @@ class LightningSensor
   public:
     void begin(SensorSettings sensorSettings);
     void setSensorSettings(SensorSettings sensorSettings);
-    int8_t getSensorEvent(SensorEvent *sensorEvent);
+    bool getSensorEvent(SensorEvent *sensorEvent);
 };
 #endif

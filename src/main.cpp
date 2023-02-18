@@ -63,7 +63,7 @@ bool checkSensor(void *)
   SensorEvent event;
   auto interrupted = sensor.getSensorEvent(&event);
 
-  if (interrupted == 1)
+  if (interrupted)
   {
     if (mqtt.connect(SYSTEM_HOSTNAME.c_str()))
     {
@@ -236,6 +236,8 @@ void setup()
   sensor.begin(settings);
 
   // call the checkSensor function every 500 millis (0.5 second)
+  // There is a one second window of time to read the interrupt register
+  // after lightning is detected, and 1.5 after a disturber.
   timer.every(500, checkSensor);
 }
 
