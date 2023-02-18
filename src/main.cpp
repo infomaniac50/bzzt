@@ -29,7 +29,7 @@ LightningSensor sensor;
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
 
-auto timer = timer_create_default(); // create a timer with default settings
+Timer<> timer = timer_create_default(); // create a timer with default settings
 
 #pragma region "Error Visibility"
 bool toggleErrorLed(void *)
@@ -102,33 +102,10 @@ void onPubSubCallback(char *topic, byte *payload, unsigned int length)
 {
   if (strcmp(topic, "lightning/ping") == 0)
   {
-    esp_chip_info_t info;
-    esp_chip_info(&info);
     StringPrint stream;
-    stream.print(F("Cores: "));
-    stream.println(info.cores);
-    stream.print(F("Model: "));
-    switch (info.model)
-    {
-      case CHIP_ESP32:
-        stream.println(F("ESP32"));
-        break;
-      case CHIP_ESP32S2:
-        stream.println(F("ESP32-S2"));
-        break;
-      case CHIP_ESP32S3:
-        stream.println(F("ESP32-S3"));
-        break;
-      case CHIP_ESP32C3:
-        stream.println(F("ESP32-C3"));
-        break;
-      case CHIP_ESP32H2:
-        stream.println(F("ESP32-H2"));
-        break;
-      default:
-        stream.println(F("Unknown"));
-        break;
-    }
+    stream.printf("Cores: %d\n", ESP.getChipCores());
+    stream.printf("Model: %s\n", ESP.getChipModel());
+    stream.printf("Revision: %d\n", ESP.getChipRevision());
 
     mqtt.publish("lightning/pong", stream.str().c_str(), false);
   }
@@ -222,13 +199,6 @@ void setup()
 
   // Connect to WPA/WPA2 network
   wcli.begin();
-
-  // attempt to connect to Wifi network:
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    delay(5000);
-    wcli.connect();
-  }
 
   // Enter your custom commands:
   wcli.term->add("broker", &setBroker, "\t<hostname> set the MQTT broker hostname");
