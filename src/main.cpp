@@ -10,12 +10,15 @@
 #include <StormFrontDistance.h>
 #include <ArduinoJson.h>
 #include <StreamUtils.h>
+#include <DateTime.h>
 
 // The calibration value for my board is 88 picoFarads.
 const int TUNING_CAPACITOR_DEFAULT = 88;
 const bool REPORT_DISTURBER_DEFAULT = false;
 const char* HOSTNAME_DEFAULT = "green-mile";
 const String SYSTEM_HOSTNAME(HOSTNAME_DEFAULT);
+const char* TZ_AMERICA_CHICAGO = "CST6CDT,M3.2.0,M11.1.0";
+
 
 SensorSettings settings;
 LightningSensor sensor;
@@ -214,6 +217,12 @@ void setup()
   // Enter your custom commands:
   wcli.term->add("broker", &setBroker, "\t<hostname> set the MQTT broker hostname");
   wcli.term->add("reboot", &reboot, "\tperform a ESP32 reboot");
+
+  DateTime.setTimeZone(TZ_AMERICA_CHICAGO);
+  DateTime.begin();
+  if (DateTime.isTimeValid()) {
+    Serial.printf("The system clock is valid.\n%s\n", DateTime.format("%a %d %b %Y %r %Z"));
+  }
 
   /*
     https://learn.adafruit.com/adafruit-esp32-feather-v2/pinouts#stemma-qt-connector-3112257
