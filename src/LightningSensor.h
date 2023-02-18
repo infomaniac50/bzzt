@@ -6,11 +6,11 @@
 
 class LightningSensor
 {
-private:
+  private:
     void attachInterruptPin(void);
     void detachInterruptPin(void);
 
-public:
+  public:
     void begin(SensorSettings sensorSettings);
     void setSensorSettings(SensorSettings sensorSettings);
     int8_t getSensorEvent(SensorEvent *sensorEvent);

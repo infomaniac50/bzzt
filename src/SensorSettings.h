@@ -8,13 +8,13 @@
 // default values.
 struct SensorSettings
 {
-    std::uint8_t noiseFloor = 2;
-    std::uint8_t watchdogThreshold = 2;
-    std::uint8_t spikeRejection = 2;
-    std::uint8_t lightningThreshold = 1;
-    std::uint8_t tuningCapacitor = 0;
-    std::uint8_t sensorLocation = INDOOR;
-    bool reportDisturber = false;
+  std::uint8_t noiseFloor = 2;
+  std::uint8_t watchdogThreshold = 2;
+  std::uint8_t spikeRejection = 2;
+  std::uint8_t lightningThreshold = 1;
+  std::uint8_t tuningCapacitor = 0;
+  std::uint8_t sensorLocation = INDOOR;
+  bool reportDisturber = false;
 };
 
 #endif

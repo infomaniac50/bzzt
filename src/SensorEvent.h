@@ -7,14 +7,14 @@ inline const char *statusToString(std::uint8_t type)
 {
   switch (type)
   {
-  case INTERRUPT_STATUS::LIGHTNING:
-    return "Lightning";
-  case INTERRUPT_STATUS::DISTURBER_DETECT:
-    return "Disturber";
-  case INTERRUPT_STATUS::NOISE_TO_HIGH:
-    return "Noise Floor Too High";
-  default:
-    return "No Event";
+    case INTERRUPT_STATUS::LIGHTNING:
+      return "Lightning";
+    case INTERRUPT_STATUS::DISTURBER_DETECT:
+      return "Disturber";
+    case INTERRUPT_STATUS::NOISE_TO_HIGH:
+      return "Noise Floor Too High";
+    default:
+      return "No Event";
   }
 }
 

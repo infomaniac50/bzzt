@@ -19,13 +19,13 @@
 SensorSettings settings;
 
 /*
-Qwiic Digital Lightning Sensor AS3935 SPI and I2C Breakout Kit
-https://www.playingwithfusion.com/productview.php?pdid=135&catid=1012
+  Qwiic Digital Lightning Sensor AS3935 SPI and I2C Breakout Kit
+  https://www.playingwithfusion.com/productview.php?pdid=135&catid=1012
 
 **Product Description**
-Breakout board for the AS3935 digital lightning sensor based on the AMS reference design. Includes specially tuned antenna, SPI or I2C interfacing, and a wide 2.4V to 5.5V standard operating range. This innovative sensor is designed to interface with most current development systems and boards, including all current Arduino modules. The breakout board features an inductor (antenna) specially designed for this application, and the board ships fully calibrated. This ensures that you don’t have to write a massive back-end to support low-level IC calibration, just focus on your final application!
+  Breakout board for the AS3935 digital lightning sensor based on the AMS reference design. Includes specially tuned antenna, SPI or I2C interfacing, and a wide 2.4V to 5.5V standard operating range. This innovative sensor is designed to interface with most current development systems and boards, including all current Arduino modules. The breakout board features an inductor (antenna) specially designed for this application, and the board ships fully calibrated. This ensures that you don’t have to write a massive back-end to support low-level IC calibration, just focus on your final application!
 
-We store calibration values for each board shipped. The calibration value (in pF) is written on the lower corner of the product label. This information can also be provided at your request by contacting Technical Support and referencing your original order number.
+  We store calibration values for each board shipped. The calibration value (in pF) is written on the lower corner of the product label. This information can also be provided at your request by contacting Technical Support and referencing your original order number.
 */
 LightningSensor sensor;
 
@@ -113,24 +113,24 @@ void onPubSubCallback(char *topic, byte *payload, unsigned int length)
     stream.print(F("Model: "));
     switch (info.model)
     {
-    case CHIP_ESP32:
-      stream.println(F("ESP32"));
-      break;
-    case CHIP_ESP32S2:
-      stream.println(F("ESP32-S2"));
-      break;
-    case CHIP_ESP32S3:
-      stream.println(F("ESP32-S3"));
-      break;
-    case CHIP_ESP32C3:
-      stream.println(F("ESP32-C3"));
-      break;
-    case CHIP_ESP32H2:
-      stream.println(F("ESP32-H2"));
-      break;
-    default:
-      stream.println(F("Unknown"));
-      break;
+      case CHIP_ESP32:
+        stream.println(F("ESP32"));
+        break;
+      case CHIP_ESP32S2:
+        stream.println(F("ESP32-S2"));
+        break;
+      case CHIP_ESP32S3:
+        stream.println(F("ESP32-S3"));
+        break;
+      case CHIP_ESP32C3:
+        stream.println(F("ESP32-C3"));
+        break;
+      case CHIP_ESP32H2:
+        stream.println(F("ESP32-H2"));
+        break;
+      default:
+        stream.println(F("Unknown"));
+        break;
     }
 
     mqtt.publish("lightning/pong", stream.str().c_str(), false);
@@ -141,48 +141,48 @@ void onPubSubCallback(char *topic, byte *payload, unsigned int length)
 #pragma region "Wifi CLI Callbacks"
 class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
 {
-  void onWifiStatus(bool isConnected)
-  {
-    if (isConnected)
+    void onWifiStatus(bool isConnected)
     {
-      if (!mqtt.connected())
+      if (isConnected)
       {
+        if (!mqtt.connected())
+        {
 
-        String broker = wcli.getString("BROKER_HOST", "");
-        if (!broker.isEmpty())
-        {
-          mqtt.setServer(broker.c_str(), 1883);
-          mqtt.setCallback(onPubSubCallback);
+          String broker = wcli.getString("BROKER_HOST", "");
+          if (!broker.isEmpty())
+          {
+            mqtt.setServer(broker.c_str(), 1883);
+            mqtt.setCallback(onPubSubCallback);
+          }
+
+          if (mqtt.connect(systemHostname.c_str()) && mqtt.subscribe("lightning/ping"))
+          {
+            setErrorStatus(false);
+          }
+          else
+          {
+            setErrorStatus(true);
+          }
         }
 
-        if (mqtt.connect(systemHostname.c_str()) && mqtt.subscribe("lightning/ping"))
-        {
-          setErrorStatus(false);
-        }
-        else
-        {
-          setErrorStatus(true);
-        }
+        digitalWrite(LED_BUILTIN, HIGH);
       }
-
-      digitalWrite(LED_BUILTIN, HIGH);
+      else
+      {
+        digitalWrite(LED_BUILTIN, LOW);
+      }
     }
-    else
+
+    void onHelpShow()
     {
-      digitalWrite(LED_BUILTIN, LOW);
+      // Enter your custom help here:
+      Serial.println("\r\nLightning Rider commands:\r\n");
+      Serial.println("broker <hostname> \tset the MQTT broker hostname");
+      Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
     }
-  }
 
-  void onHelpShow()
-  {
-    // Enter your custom help here:
-    Serial.println("\r\nLightning Rider commands:\r\n");
-    Serial.println("broker <hostname> \tset the MQTT broker hostname");
-    Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
-  }
-
-  void onNewWifi(String ssid, String passw) {
-  }
+    void onNewWifi(String ssid, String passw) {
+    }
 };
 
 void reboot(String opts)
@@ -229,16 +229,16 @@ void setup()
   wcli.term->add("reboot", &reboot, "\tperform a ESP32 reboot");
 
   /*
-  https://learn.adafruit.com/adafruit-esp32-feather-v2/pinouts#stemma-qt-connector-3112257
+    https://learn.adafruit.com/adafruit-esp32-feather-v2/pinouts#stemma-qt-connector-3112257
 
-  At the top-left corner of the ESP32 module, is a STEMMA QT connector, labeled QT I2C on the silk.
-  This connector allows you to connect a variety of sensors and breakouts with STEMMA QT connectors using various associated cables.
+    At the top-left corner of the ESP32 module, is a STEMMA QT connector, labeled QT I2C on the silk.
+    This connector allows you to connect a variety of sensors and breakouts with STEMMA QT connectors using various associated cables.
 
-  You must enable the NEOPIXEL_I2C_POWER pin (GPIO 2) for the STEMMA QT connector power to work. Set it to be an output and HIGH in your code.
+    You must enable the NEOPIXEL_I2C_POWER pin (GPIO 2) for the STEMMA QT connector power to work. Set it to be an output and HIGH in your code.
 
-  There is a NEOPIXEL_I2C_POWER (GPIO 2) pin that must be set to an output and HIGH for the STEMMA QT connector power to work.
-  For running in low power mode, you can disable (set output and LOW) the NEOPIXEL_I2C_POWER pin,
-  this will turn off the separate 3.3V regulator that powers the QT connector's red wire
+    There is a NEOPIXEL_I2C_POWER (GPIO 2) pin that must be set to an output and HIGH for the STEMMA QT connector power to work.
+    For running in low power mode, you can disable (set output and LOW) the NEOPIXEL_I2C_POWER pin,
+    this will turn off the separate 3.3V regulator that powers the QT connector's red wire
   */
   pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
   digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
