@@ -1,9 +1,9 @@
 #include <cstdint>
-#include <atomic>
 #include <SPI.h>
 #include <Wire.h>
 #include "SparkFun_AS3935.h"
 #include "LightningSensor.h"
+#include <sys/time.h>
 
 /*
   Qwiic Digital Lightning Sensor AS3935 SPI and I2C Breakout Kit
@@ -27,19 +27,27 @@ const int INTERRUPT_PIN = 5;
 SparkFun_AS3935 lightning(AS3935_ADDR);
 
 // interrupt trigger global var
-volatile std::atomic<bool> AS3935_ISR_Trig(false);
+static portMUX_TYPE sensorInterruptSpinlock = portMUX_INITIALIZER_UNLOCKED;
+volatile bool sensorInterruptTriggered = false;
+volatile struct timeval sensorInterruptTimestamp;
 
 // this is irq handler for AS3935 interrupts, has to return void and take no arguments
 // always make code in interrupt handlers fast and short
 void ARDUINO_ISR_ATTR AS3935_ISR()
 {
-  AS3935_ISR_Trig = true;
+  taskENTER_CRITICAL_ISR(&sensorInterruptSpinlock);
+  sensorInterruptTriggered = true;
+  struct timeval now;
+  gettimeofday(&now, nullptr);
+  sensorInterruptTimestamp.tv_sec = now.tv_sec;
+  sensorInterruptTimestamp.tv_usec = now.tv_usec;
+  taskEXIT_CRITICAL_ISR(&sensorInterruptSpinlock);
 }
 
 void LightningSensor::attachInterruptPin()
 {
   // When lightning is detected the interrupt pin goes HIGH.
-  AS3935_ISR_Trig = false; // clear trigger
+  sensorInterruptTriggered = false; // clear trigger
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), AS3935_ISR, RISING);
 }
 
@@ -127,9 +135,13 @@ void LightningSensor::setSensorSettings(SensorSettings sensorSettings)
 
 bool LightningSensor::getSensorEvent(SensorEvent *sensorEvent)
 {
-  // Atomically exchange false with the previous value.
-  // The previous value is stored in a local variable.
-  bool interrupted = AS3935_ISR_Trig.exchange(false);
+  taskENTER_CRITICAL(&sensorInterruptSpinlock);
+  bool interrupted = sensorInterruptTriggered;
+  sensorInterruptTriggered = false;
+
+  sensorEvent->timestamp.tv_sec = sensorInterruptTimestamp.tv_sec;
+  sensorEvent->timestamp.tv_usec = sensorInterruptTimestamp.tv_usec;
+  taskEXIT_CRITICAL(&sensorInterruptSpinlock);
 
   if (!interrupted) {
     return false;

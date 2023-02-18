@@ -2,6 +2,7 @@
 #define _SENSOR_EVENT_H_
 
 #include <cstdint>
+#include <sys/time.h>
 
 inline const char *statusToString(std::uint8_t type)
 {
@@ -23,6 +24,7 @@ struct SensorEvent
   std::uint8_t type;
   std::uint8_t distance;
   long energy;
+  timeval timestamp;
 };
 
 #endif

@@ -18,6 +18,10 @@ const bool REPORT_DISTURBER_DEFAULT = false;
 const char* HOSTNAME_DEFAULT = "green-mile";
 const String SYSTEM_HOSTNAME(HOSTNAME_DEFAULT);
 const char* TZ_AMERICA_CHICAGO = "CST6CDT,M3.2.0,M11.1.0";
+// Plucked from /usr/share/i18n/locales/en_US on a local linux box
+// % Appropriate date and time representation (%c)
+// d_t_fmt "%a %d %b %Y %r %Z"
+const char* DEFAULT_DATETIME_FORMAT = "%a %d %b %Y %r %Z";
 
 
 SensorSettings settings;
@@ -75,6 +79,8 @@ bool checkSensor(void *)
       doc["type"] = statusToString(event.type);
       doc["distance"] = distanceToString(event.distance);
       doc["energy"] = event.energy;
+      int64_t time_us = (int64_t)event.timestamp.tv_sec * 1000000L + (int64_t)event.timestamp.tv_usec;
+      doc["timestamp"] = time_us;
 
       mqtt.beginPublish("lightning/event", measureJson(doc), false);
       BufferingPrint bufferedClient(mqtt, 32);
@@ -189,6 +195,16 @@ void setBroker(String opts)
   Serial.println("\r\nMQTT broker set to " + broker);
   Serial.println("Please reboot to apply the change.");
 }
+
+void printCurrentDate(String opts) {
+  if (DateTime.isTimeValid()) {
+    String currentTime = DateTime.format(DEFAULT_DATETIME_FORMAT);
+    Serial.printf("The system clock is valid.\n%s\n", currentTime.c_str());
+  } else {
+    Serial.println("The system clock is not valid.");
+  }
+
+}
 #pragma endregion
 
 void setup()
@@ -217,12 +233,10 @@ void setup()
   // Enter your custom commands:
   wcli.term->add("broker", &setBroker, "\t<hostname> set the MQTT broker hostname");
   wcli.term->add("reboot", &reboot, "\tperform a ESP32 reboot");
+  wcli.term->add("date", &printCurrentDate, "\tprint date and time from the system clock");
 
   DateTime.setTimeZone(TZ_AMERICA_CHICAGO);
   DateTime.begin();
-  if (DateTime.isTimeValid()) {
-    Serial.printf("The system clock is valid.\n%s\n", DateTime.format("%a %d %b %Y %r %Z"));
-  }
 
   /*
     https://learn.adafruit.com/adafruit-esp32-feather-v2/pinouts#stemma-qt-connector-3112257
