@@ -49,7 +49,7 @@ bool toggleErrorLed(void *)
 
 void setErrorStatus(bool isErrored = true)
 {
-  static uintptr_t error_task = 0;
+  static Timer<>::Task error_task = 0;
 
   if (isErrored)
   {
@@ -179,6 +179,9 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
     Serial.println("\r\nLightning Rider commands:\r\n");
     Serial.println("broker <hostname> \tset the MQTT broker hostname");
     Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
+  }
+
+  void onNewWifi(String ssid, String passw) {
   }
 };
 
