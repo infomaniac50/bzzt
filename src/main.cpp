@@ -193,6 +193,7 @@ void setup()
   // Initialize serial and wait for port to open:
   Serial.begin(115200);
 
+  pinMode(BUTTON, INPUT);
   pinMode(LED_BUILTIN, OUTPUT);
 
   WiFi.hostname(SYSTEM_HOSTNAME);
@@ -231,14 +232,23 @@ void setup()
   settings.tuningCapacitor = TUNING_CAPACITOR_DEFAULT;
   settings.reportDisturber = REPORT_DISTURBER_DEFAULT;
 
-  if (!sensor.begin(settings)) {
-    setErrorStatus(true);
-  }
+  if (digitalRead(BUTTON) == HIGH) {
+    if (!sensor.begin(settings)) {
+      setErrorStatus(true);
+    }
 
-  // call the checkSensor function every 500 millis (0.5 second)
-  // There is a one second window of time to read the interrupt register
-  // after lightning is detected, and 1.5 after a disturber.
-  timer.every(500, checkSensor);
+    // call the checkSensor function every 500 millis (0.5 second)
+    // There is a one second window of time to read the interrupt register
+    // after lightning is detected, and 1.5 after a disturber.
+    timer.every(500, checkSensor);
+  }
+  else {
+    if (!sensor.begin(settings, false)) {
+      setErrorStatus(true);
+    }
+
+    Serial.println("Switch pressed. Disabling Interrupts");
+  }
 }
 
 void loop()
