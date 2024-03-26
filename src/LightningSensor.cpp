@@ -56,13 +56,12 @@ void LightningSensor::detachInterruptPin()
   detachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN));
 }
 
-void LightningSensor::begin(SensorSettings sensorSettings)
+int LightningSensor::begin(SensorSettings sensorSettings, bool enableInterruptPin)
 {
   Wire.begin(); // Begin Wire before lightning sensor.
   if (!lightning.begin())
   { // Initialize the sensor.
-    while (1)
-      ;
+    return -1;
   }
 
   lightning.resetSettings();
@@ -104,7 +103,7 @@ void LightningSensor::begin(SensorSettings sensorSettings)
   lightning.lightningThreshold(sensorSettings.lightningThreshold);
 
 
-  lightning.calibrateOsc();
+  bool calibrationSuccessful = lightning.calibrateOsc();
 
   // When the distance to the storm is estimated, it takes into account other
   // lightning that was sensed in the past 15 minutes. If you want to reset
@@ -125,8 +124,11 @@ void LightningSensor::begin(SensorSettings sensorSettings)
   //  Serial.println("Successfully woken up!");
   // else
   // Serial.println("Error recalibrating internal osciallator on wake up.");
+  if (enableInterruptPin) {
+    attachInterruptPin();
+  }
 
-  attachInterruptPin();
+  return calibrationSuccessful ? 0 : -2;
 }
 
 bool LightningSensor::getSensorEvent(SensorEvent *sensorEvent)

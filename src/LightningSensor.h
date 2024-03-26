@@ -11,7 +11,7 @@ class LightningSensor
     void detachInterruptPin(void);
 
   public:
-    void begin(SensorSettings sensorSettings);
+    int begin(SensorSettings sensorSettings, bool enableInterruptPin = true);
     bool getSensorEvent(SensorEvent *sensorEvent);
 };
 #endif
