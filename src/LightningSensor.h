@@ -12,6 +12,7 @@ class LightningSensor
 
   public:
     int begin(SensorSettings sensorSettings, bool enableInterruptPin = true);
+    SparkFun_AS3935& getSensor();
     bool getSensorEvent(SensorEvent *sensorEvent);
 };
 #endif

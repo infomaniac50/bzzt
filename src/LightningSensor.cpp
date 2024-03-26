@@ -131,6 +131,10 @@ int LightningSensor::begin(SensorSettings sensorSettings, bool enableInterruptPi
   return calibrationSuccessful ? 0 : -2;
 }
 
+SparkFun_AS3935& LightningSensor::getSensor() {
+  return lightning;
+}
+
 bool LightningSensor::getSensorEvent(SensorEvent *sensorEvent)
 {
   taskENTER_CRITICAL(&sensorInterruptSpinlock);
