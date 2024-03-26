@@ -231,7 +231,9 @@ void setup()
   settings.tuningCapacitor = TUNING_CAPACITOR_DEFAULT;
   settings.reportDisturber = REPORT_DISTURBER_DEFAULT;
 
-  sensor.begin(settings);
+  if (!sensor.begin(settings)) {
+    setErrorStatus(true);
+  }
 
   // call the checkSensor function every 500 millis (0.5 second)
   // There is a one second window of time to read the interrupt register
