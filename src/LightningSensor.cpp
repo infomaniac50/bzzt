@@ -20,8 +20,8 @@
 const int AS3935_ADDR = 0x03;
 
 // Interrupt pin for lightning detection
-// enable interrupt HS1_DATA6/VSPICS0/GPIO5/SCK
-const int INTERRUPT_PIN = 5;
+// enable interrupt D14/GPIO14/ADC2_CH6/HSPICLK/HS2_CLK
+const int INTERRUPT_PIN = 14;
 
 // If you're using I-squared-C then keep the following line. Address is set to default.
 SparkFun_AS3935 lightning(AS3935_ADDR);
