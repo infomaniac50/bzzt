@@ -182,6 +182,10 @@ void printCurrentDate(String opts) {
   }
 
 }
+
+void clearStorage(String opts) {
+  wcli.clearSettings();
+}
 #pragma endregion
 
 void setup()
@@ -204,6 +208,7 @@ void setup()
   wcli.term->add("broker", &setBroker, "\t<hostname> set the MQTT broker hostname");
   wcli.term->add("reboot", &reboot, "\tperform a ESP32 reboot");
   wcli.term->add("date", &printCurrentDate, "\tprint date and time from the system clock");
+  wcli.term->add("clear", &clearStorage, "\tClear non-volatile storage.");
 
   DateTime.setTimeZone(TZ_AMERICA_CHICAGO);
   DateTime.begin();
