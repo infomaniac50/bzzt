@@ -186,6 +186,111 @@ void printCurrentDate(String opts) {
 void clearStorage(String opts) {
   wcli.clearSettings();
 }
+
+void setSetting(String opts) {
+  auto pair = maschinendeck::SerialTerminal::ParseCommand(opts);
+  auto name = pair.first();
+  if (name.length() < 1) {
+    Serial.println("Missing argument <name>");
+    // noiseFloor
+    // watchdogThreshold
+    // spikeRejection = 1 - 11
+    // lightningThreshold
+    // tuningCapacitor
+    // sensorLocation
+    // reportDisturber = 1 or 0
+    // displayOscillatorAntenna = 1 or 0
+    return;
+  }
+
+  if (name.equalsIgnoreCase("spikeRejection") == 1) {
+    auto value = pair.second().toInt();
+    if (value < 1 || value > 11) {
+      Serial.println("The value argument must be between 1 and 11.");
+      return;
+    }
+
+    settings.spikeRejection = (uint8_t) value;
+
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    rawSensor.spikeRejection(settings.spikeRejection);
+
+    return;
+  }
+
+  if (name.equalsIgnoreCase("reportDisturber") == 1) {
+    auto value = pair.second().toInt();
+    if (value < 0 || value > 1) {
+      Serial.println("The value argument must be 1 or 0, indicating true or false respectively.");
+      return;
+    }
+
+    settings.reportDisturber = (bool) value;
+
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    rawSensor.maskDisturber(!settings.reportDisturber);
+
+    return;
+  }
+
+  if (name.equalsIgnoreCase("displayOscillatorAntenna") == 1) {
+    auto value = pair.second().toInt();
+    if (value < 0 || value > 1) {
+      Serial.println("The value argument must be 1 or 0, indicating true or false respectively.");
+      return;
+    }
+
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    rawSensor.displayOscillator((bool) value, 3);
+
+    return;
+  }
+
+  Serial.println("Setting name not recognized.");
+}
+
+void getSetting(String opts) {
+  auto pair = maschinendeck::SerialTerminal::ParseCommand(opts);
+  auto name = pair.first();
+  if (name.length() < 1) {
+    Serial.println("Missing argument <name>");
+    // noiseFloor
+    // watchdogThreshold
+    // spikeRejection = 1 - 11
+    // lightningThreshold
+    // tuningCapacitor
+    // sensorLocation
+    // reportDisturber
+    return;
+  }
+
+  if (name.equalsIgnoreCase("spikeRejection") == 1) {
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    settings.spikeRejection = rawSensor.readSpikeRejection();
+
+    Serial.printf("spikeRejection: %d\n", settings.spikeRejection);
+
+    return;
+  }
+
+  if (name.equalsIgnoreCase("reportDisturber") == 1) {
+    auto value = pair.second().toInt();
+    if (value < 0 || value > 1) {
+      Serial.println("The report disturber value must be 1 or 0, indicating true or false respectively.");
+      return;
+    }
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+
+    settings.reportDisturber = !((bool) rawSensor.readMaskDisturber());
+
+    Serial.printf("reportDisturber: %s\n", settings.reportDisturber ? "true" : "false");
+
+    return;
+  }
+
+  Serial.println("Setting name not recognized.");
+}
+
 #pragma endregion
 
 void setup()
@@ -210,6 +315,8 @@ void setup()
   wcli.term->add("reboot", &reboot, "\tperform a ESP32 reboot");
   wcli.term->add("date", &printCurrentDate, "\tprint date and time from the system clock");
   wcli.term->add("clear", &clearStorage, "\tClear non-volatile storage.");
+  wcli.term->add("set", &setSetting, "\t<name> <value> Set lightning sensor setting.");
+  wcli.term->add("get", &getSetting, "\t<name> Get lightning sensor setting.");
 
   DateTime.setTimeZone(TZ_AMERICA_CHICAGO);
   DateTime.begin();
