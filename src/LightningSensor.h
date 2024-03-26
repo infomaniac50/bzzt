@@ -12,7 +12,6 @@ class LightningSensor
 
   public:
     void begin(SensorSettings sensorSettings);
-    void setSensorSettings(SensorSettings sensorSettings);
     bool getSensorEvent(SensorEvent *sensorEvent);
 };
 #endif

@@ -65,12 +65,6 @@ void LightningSensor::begin(SensorSettings sensorSettings)
       ;
   }
 
-  setSensorSettings(sensorSettings);
-  attachInterruptPin();
-}
-
-void LightningSensor::setSensorSettings(SensorSettings sensorSettings)
-{
   lightning.resetSettings();
 
   // "Disturbers" are events that are false lightning events. If you find
@@ -131,6 +125,8 @@ void LightningSensor::setSensorSettings(SensorSettings sensorSettings)
   //  Serial.println("Successfully woken up!");
   // else
   // Serial.println("Error recalibrating internal osciallator on wake up.");
+
+  attachInterruptPin();
 }
 
 bool LightningSensor::getSensorEvent(SensorEvent *sensorEvent)
