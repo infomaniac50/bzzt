@@ -274,11 +274,6 @@ void getSetting(String opts) {
   }
 
   if (name.equalsIgnoreCase("reportDisturber") == 1) {
-    auto value = pair.second().toInt();
-    if (value < 0 || value > 1) {
-      Serial.println("The report disturber value must be 1 or 0, indicating true or false respectively.");
-      return;
-    }
     SparkFun_AS3935 rawSensor = sensor.getSensor();
 
     settings.reportDisturber = !((bool) rawSensor.readMaskDisturber());
