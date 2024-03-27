@@ -4,8 +4,8 @@
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
-
-#include <SerialTerminal.hpp>
+#include <SimpleCLI.h>
+#include <Stream.h>
 
 #define RW_MODE false
 #define RO_MODE true
@@ -18,12 +18,29 @@ class ESP32WifiCLICallbacks;
 class ESP32WifiCLI {
  public:
   Preferences cfg;
-  maschinendeck::SerialTerminal* term;
+
+  // Create CLI Object
+  SimpleCLI cli;
+
+  // Commands
+  Command cmdHelp;
+  Command cmdSetSSID;
+  Command cmdSetPASW;
+  Command cmdConnect;
+  Command cmdList;
+  Command cmdSelect;
+  Command cmdMode;
+  Command cmdScan;
+  Command cmdStatus;
+  Command cmdDisconnect;
+  Command cmdDelete;
+
   WiFiMulti wifiMulti;
   const uint32_t connectTimeoutMs = 10000;
   bool silent = false;
   bool connectInBoot = true;
 
+  ESP32WifiCLI(Stream* io);
   void begin(long baudrate = 0, String app_name = "wifi_cli_prefs");
   void loop();
   void printHelp();
@@ -63,8 +80,20 @@ class ESP32WifiCLI {
   String app_name;
   String temp_ssid = "";
   String temp_pasw = "";
+  Stream* io;
 
   String getNetKeyName(int net);
+  static void _scanNetworks(ESP32WifiCLI* wcli, Command cmd);
+  static void _printHelp(ESP32WifiCLI* wcli, Command cmd);
+  static void _setSSID(ESP32WifiCLI* wcli, Command cmd);
+  static void _setPASW(ESP32WifiCLI* wcli, Command cmd);
+  static void _connect(ESP32WifiCLI* wcli, Command cmd);
+  static void _disconnect(ESP32WifiCLI* wcli, Command cmd);
+  static void _listNetworks(ESP32WifiCLI* wcli, Command cmd);
+  static void _wifiStatus(ESP32WifiCLI* wcli, Command cmd);
+  static void _deleteNetwork(ESP32WifiCLI* wcli, Command cmd);
+  static void _selectAP(ESP32WifiCLI* wcli, Command cmd);
+  static void _setMode(ESP32WifiCLI* wcli, Command cmd);
 
   ESP32WifiCLICallbacks* cb = nullptr;
 };
@@ -76,9 +105,5 @@ public:
     virtual void onHelpShow();
     virtual void onNewWifi(String ssid, String passw);
 };
-
-#if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_ESP32WIFICLI)
-extern ESP32WifiCLI wcli;
-#endif
 
 #endif

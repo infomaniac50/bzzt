@@ -1,5 +1,6 @@
 
 #include <Arduino.h>
+#include <SimpleCLI.h>
 #include <ESP32WifiCLI.hpp>
 #include <LightningSensor.h>
 #include <PubSubClient.h>
@@ -28,6 +29,7 @@ SensorSettings settings;
 LightningSensor sensor;
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
+ESP32WifiCLI wcli;
 
 Timer<> timer = timer_create_default(); // create a timer with default settings
 
@@ -158,22 +160,32 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
     void onNewWifi(String ssid, String passw) { }
 };
 
-void reboot(String opts)
+void reboot(cmd* c)
 {
   ESP.restart();
 }
 
-void setBroker(String opts)
+void setBroker(cmd* c)
 {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
-  String broker = operands.first();
+  Command cmd(c);
+  // Get first (and only) Argument
+  Argument arg = cmd.getArgument(0);
 
-  wcli.setString("BROKER_HOST", broker);
-  Serial.println("\r\nMQTT broker set to " + broker);
+  // Get value of argument
+  String argVal = arg.getValue();
+  argVal.trim();
+  
+  if (argVal.length() == 0) {
+    Serial.println("Missing argument <ssid>");
+    return;
+  }
+
+  wcli.setString("BROKER_HOST", argVal);
+  Serial.println("\r\nMQTT broker set to " + argVal);
   Serial.println("Please reboot to apply the change.");
 }
 
-void printCurrentDate(String opts) {
+void printCurrentDate(cmd* c) {
   if (DateTime.isTimeValid()) {
     String currentTime = DateTime.format(DEFAULT_DATETIME_FORMAT);
     Serial.printf("The system clock is valid.\n%s\n", currentTime.c_str());
@@ -183,14 +195,17 @@ void printCurrentDate(String opts) {
 
 }
 
-void clearStorage(String opts) {
+void clearStorage(cmd* c) {
   wcli.clearSettings();
 }
 
-void setSetting(String opts) {
-  auto pair = maschinendeck::SerialTerminal::ParseCommand(opts);
-  auto name = pair.first();
-  if (name.length() < 1) {
+void setSetting(cmd* c) {
+  Command cmd(c);
+  
+  Argument argName = cmd.getArgument("name");
+  Argument argValue = cmd.getArgument("value");
+
+  if (!argName.isSet()) {
     Serial.println("Missing argument <name>");
     // noiseFloor
     // watchdogThreshold
@@ -203,10 +218,16 @@ void setSetting(String opts) {
     return;
   }
 
-  if (name.equalsIgnoreCase("spikeRejection") == 1) {
-    auto value = pair.second().toInt();
+  String name = argName.getValue();
+  if (name.equalsIgnoreCase("spikeRejection")) {
+    if (!argValue.isSet()) {
+      Serial.println("Missing argument <value>");
+      return;
+    }
+
+    int value = argValue.getValue().toInt();
     if (value < 1 || value > 11) {
-      Serial.println("The value argument must be between 1 and 11.");
+      Serial.println("Invalid argument <value>: You must enter a number between 1 and 11.");
       return;
     }
 
@@ -219,7 +240,12 @@ void setSetting(String opts) {
   }
 
   if (name.equalsIgnoreCase("reportDisturber") == 1) {
-    auto value = pair.second().toInt();
+    if (!argValue.isSet()) {
+      Serial.println("Missing argument <value>");
+      return;
+    }
+
+    int value = argValue.getValue().toInt();
     if (value < 0 || value > 1) {
       Serial.println("The value argument must be 1 or 0, indicating true or false respectively.");
       return;
@@ -234,7 +260,12 @@ void setSetting(String opts) {
   }
 
   if (name.equalsIgnoreCase("displayOscillatorAntenna") == 1) {
-    auto value = pair.second().toInt();
+    if (!argValue.isSet()) {
+      Serial.println("Missing argument <value>");
+      return;
+    }
+
+    int value = argValue.getValue().toInt();
     if (value < 0 || value > 1) {
       Serial.println("The value argument must be 1 or 0, indicating true or false respectively.");
       return;
@@ -249,10 +280,13 @@ void setSetting(String opts) {
   Serial.println("Setting name not recognized.");
 }
 
-void getSetting(String opts) {
-  auto pair = maschinendeck::SerialTerminal::ParseCommand(opts);
-  auto name = pair.first();
-  if (name.length() < 1) {
+void getSetting(cmd* c) {
+  Command cmd(c);
+  
+  Argument argName = cmd.getArgument("name");
+  Argument argValue = cmd.getArgument("value");
+
+  if (!argName.isSet()) {
     Serial.println("Missing argument <name>");
     // noiseFloor
     // watchdogThreshold
@@ -260,10 +294,12 @@ void getSetting(String opts) {
     // lightningThreshold
     // tuningCapacitor
     // sensorLocation
-    // reportDisturber
+    // reportDisturber = 1 or 0
+    // displayOscillatorAntenna = 1 or 0
     return;
   }
 
+  String name = argName.getValue();
   if (name.equalsIgnoreCase("spikeRejection") == 1) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
     settings.spikeRejection = rawSensor.readSpikeRejection();
@@ -274,6 +310,16 @@ void getSetting(String opts) {
   }
 
   if (name.equalsIgnoreCase("reportDisturber") == 1) {
+    if (!argValue.isSet()) {
+      Serial.println("Missing argument <value>");
+      return;
+    }
+
+    int value = argValue.getValue().toInt();
+    if (value < 0 || value > 1) {
+      Serial.println("The report disturber value must be 1 or 0, indicating true or false respectively.");
+      return;
+    }
     SparkFun_AS3935 rawSensor = sensor.getSensor();
 
     settings.reportDisturber = !((bool) rawSensor.readMaskDisturber());
@@ -287,6 +333,13 @@ void getSetting(String opts) {
 }
 
 #pragma endregion
+
+Command cmdBroker;
+Command cmdReboot;
+Command cmdDate;
+Command cmdClear;
+Command cmdSet;
+Command cmdGet;
 
 void setup()
 {
@@ -306,12 +359,18 @@ void setup()
   wcli.begin();
 
   // Enter your custom commands:
-  wcli.term->add("broker", &setBroker, "\t<hostname> set the MQTT broker hostname");
-  wcli.term->add("reboot", &reboot, "\tperform a ESP32 reboot");
-  wcli.term->add("date", &printCurrentDate, "\tprint date and time from the system clock");
-  wcli.term->add("clear", &clearStorage, "\tClear non-volatile storage.");
-  wcli.term->add("set", &setSetting, "\t<name> <value> Set lightning sensor setting.");
-  wcli.term->add("get", &getSetting, "\t<name> Get lightning sensor setting.");
+  cmdBroker = wcli.cli.addCommand("broker", setBroker);
+  cmdBroker.setDescription("\t<hostname> set the MQTT broker hostname");
+  cmdReboot = wcli.cli.addCommand("reboot", reboot);
+  cmdReboot.setDescription("\tperform a ESP32 reboot");
+  cmdDate = wcli.cli.addCommand("date", printCurrentDate);
+  cmdDate.setDescription("\tprint date and time from the system clock");
+  cmdClear = wcli.cli.addCommand("clear", clearStorage);
+  cmdClear.setDescription("\tClear non-volatile storage.");
+  cmdSet = wcli.cli.addCommand("set", setSetting);
+  cmdSet.setDescription("\t<name> <value> Set lightning sensor setting.");
+  cmdGet = wcli.cli.addCommand("get", getSetting);
+  cmdGet.setDescription("\t<name> Get lightning sensor setting.");
 
   DateTime.setTimeZone(TZ_AMERICA_CHICAGO);
   DateTime.begin();
