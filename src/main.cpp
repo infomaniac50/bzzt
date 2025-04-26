@@ -1,6 +1,5 @@
 
 #include <Arduino.h>
-#include <SimpleCLI.h>
 #include <ESP32WifiCLI.hpp>
 #include <LightningSensor.h>
 #include <PubSubClient.h>
@@ -29,7 +28,6 @@ SensorSettings settings;
 LightningSensor sensor;
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
-ESP32WifiCLI wcli;
 
 Timer<> timer = timer_create_default(); // create a timer with default settings
 
@@ -39,7 +37,7 @@ bool toggleErrorLed(void *)
   static bool state = false;
 
   state = !state;
-  digitalWrite(LED_BUILTIN, state);
+  neopixelWrite(LED_BUILTIN, state ? RGB_BRIGHTNESS : 0, 0, 0);
 
   return true;
 }
@@ -141,72 +139,64 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
           }
         }
 
-        digitalWrite(LED_BUILTIN, HIGH);
+        neopixelWrite(LED_BUILTIN, 0, RGB_BRIGHTNESS, 0);
       }
       else
       {
-        digitalWrite(LED_BUILTIN, LOW);
+        neopixelWrite(LED_BUILTIN, 0, 0, RGB_BRIGHTNESS);
       }
     }
 
     void onHelpShow()
     {
-      // Enter your custom help here:
-      Serial.println("\r\nLightning Rider commands:\r\n");
-      Serial.println("broker <hostname> \tset the MQTT broker hostname");
-      Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
+
     }
 
     void onNewWifi(String ssid, String passw) { }
 };
 
-void reboot(cmd* c)
-{
+void reboot(char *args, Stream *response){
+  wcli.shell->clear();
   ESP.restart();
 }
 
-void setBroker(cmd* c)
+void setBroker(char *args, Stream *response)
 {
-  Command cmd(c);
-  // Get first (and only) Argument
-  Argument arg = cmd.getArgument(0);
+  String argVal = wcli.parseArgument(args);
 
-  // Get value of argument
-  String argVal = arg.getValue();
   argVal.trim();
   
   if (argVal.length() == 0) {
-    Serial.println("Missing argument <ssid>");
+    response->println("Missing argument <BROKER_HOST>");
     return;
   }
 
   wcli.setString("BROKER_HOST", argVal);
-  Serial.println("\r\nMQTT broker set to " + argVal);
-  Serial.println("Please reboot to apply the change.");
+  response->println("\r\nMQTT broker set to " + argVal);
+  response->println("Please reboot to apply the change.");
 }
 
-void printCurrentDate(cmd* c) {
+void printCurrentDate(char *args, Stream *response) {
   if (DateTime.isTimeValid()) {
     String currentTime = DateTime.format(DEFAULT_DATETIME_FORMAT);
-    Serial.printf("The system clock is valid.\n%s\n", currentTime.c_str());
+    response->printf("The system clock is valid.\n%s\n", currentTime.c_str());
   } else {
-    Serial.println("The system clock is not valid.");
+    response->println("The system clock is not valid.");
   }
 
 }
 
-void clearStorage(cmd* c) {
+void clearStorage(char *args, Stream *response) {
   wcli.clearSettings();
 }
 
-void setSetting(cmd* c) {
-  Command cmd(c);
-  
-  Argument argName = cmd.getArgument("name");
-  Argument argValue = cmd.getArgument("value");
+void setSetting(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
 
-  if (!argName.isSet()) {
-    Serial.println("Missing argument <name>");
+  String argName = operands.first();
+
+  if (argName.isEmpty()) {
+    response->println("Missing argument <name>");
     // noiseFloor
     // watchdogThreshold
     // spikeRejection = 1 - 11
@@ -218,16 +208,17 @@ void setSetting(cmd* c) {
     return;
   }
 
-  String name = argName.getValue();
-  if (name.equalsIgnoreCase("spikeRejection")) {
-    if (!argValue.isSet()) {
-      Serial.println("Missing argument <value>");
+  String argValue = operands.second();
+
+  if (argName.equalsIgnoreCase("spikeRejection")) {
+    if (argValue.isEmpty()) {
+      response->println("Missing argument <value>");
       return;
     }
 
-    int value = argValue.getValue().toInt();
+    int value = argValue.toInt();
     if (value < 1 || value > 11) {
-      Serial.println("Invalid argument <value>: You must enter a number between 1 and 11.");
+      response->println("Invalid argument <value>: You must enter a number between 1 and 11.");
       return;
     }
 
@@ -239,15 +230,15 @@ void setSetting(cmd* c) {
     return;
   }
 
-  if (name.equalsIgnoreCase("reportDisturber") == 1) {
-    if (!argValue.isSet()) {
-      Serial.println("Missing argument <value>");
+  if (argName.equalsIgnoreCase("reportDisturber") == 1) {
+    if (argValue.isEmpty()) {
+      response->println("Missing argument <value>");
       return;
     }
 
-    int value = argValue.getValue().toInt();
+    int value = argValue.toInt();
     if (value < 0 || value > 1) {
-      Serial.println("The value argument must be 1 or 0, indicating true or false respectively.");
+      response->println("The value argument must be 1 or 0, indicating true or false respectively.");
       return;
     }
 
@@ -259,15 +250,15 @@ void setSetting(cmd* c) {
     return;
   }
 
-  if (name.equalsIgnoreCase("displayOscillatorAntenna") == 1) {
-    if (!argValue.isSet()) {
-      Serial.println("Missing argument <value>");
+  if (argName.equalsIgnoreCase("displayOscillatorAntenna") == 1) {
+    if (argValue.isEmpty()) {
+      response->println("Missing argument <value>");
       return;
     }
 
-    int value = argValue.getValue().toInt();
+    int value = argValue.toInt();
     if (value < 0 || value > 1) {
-      Serial.println("The value argument must be 1 or 0, indicating true or false respectively.");
+      response->println("The value argument must be 1 or 0, indicating true or false respectively.");
       return;
     }
 
@@ -277,17 +268,16 @@ void setSetting(cmd* c) {
     return;
   }
 
-  Serial.println("Setting name not recognized.");
+  response->println("Setting name not recognized.");
 }
 
-void getSetting(cmd* c) {
-  Command cmd(c);
+void getSetting(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   
-  Argument argName = cmd.getArgument("name");
-  Argument argValue = cmd.getArgument("value");
-
-  if (!argName.isSet()) {
-    Serial.println("Missing argument <name>");
+  String argName = operands.first();
+  
+  if (argName.isEmpty()) {
+    response->println("Missing argument <name>");
     // noiseFloor
     // watchdogThreshold
     // spikeRejection = 1 - 11
@@ -299,55 +289,40 @@ void getSetting(cmd* c) {
     return;
   }
 
-  String name = argName.getValue();
-  if (name.equalsIgnoreCase("spikeRejection") == 1) {
+  String argValue = operands.second();
+
+  if (argName.equalsIgnoreCase("spikeRejection") == 1) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
     settings.spikeRejection = rawSensor.readSpikeRejection();
 
-    Serial.printf("spikeRejection: %d\n", settings.spikeRejection);
+    response->printf("spikeRejection: %d\n", settings.spikeRejection);
 
     return;
   }
 
-  if (name.equalsIgnoreCase("reportDisturber") == 1) {
-    if (!argValue.isSet()) {
-      Serial.println("Missing argument <value>");
-      return;
-    }
-
-    int value = argValue.getValue().toInt();
-    if (value < 0 || value > 1) {
-      Serial.println("The report disturber value must be 1 or 0, indicating true or false respectively.");
-      return;
-    }
+  if (argName.equalsIgnoreCase("reportDisturber") == 1) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
 
     settings.reportDisturber = !((bool) rawSensor.readMaskDisturber());
 
-    Serial.printf("reportDisturber: %s\n", settings.reportDisturber ? "true" : "false");
+    response->printf("reportDisturber: %s\n", settings.reportDisturber ? "true" : "false");
 
     return;
   }
 
-  Serial.println("Setting name not recognized.");
+  response->println("Setting name not recognized.");
 }
 
 #pragma endregion
 
-Command cmdBroker;
-Command cmdReboot;
-Command cmdDate;
-Command cmdClear;
-Command cmdSet;
-Command cmdGet;
-
 void setup()
 {
+  neopixelWrite(LED_BUILTIN, 0, 0, 0);
   // Initialize serial and wait for port to open:
   Serial.begin(115200);
 
-  pinMode(BUTTON, INPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
+  // pinMode(BUTTON, INPUT);
+  // pinMode(STATUS_LED, OUTPUT);
 
   WiFi.hostname(SYSTEM_HOSTNAME);
 
@@ -355,23 +330,18 @@ void setup()
   delay(1000);
   wcli.setCallback(new mESP32WifiCLICallbacks());
 
+  // Enter your custom commands:
+  wcli.add("broker", &setBroker, "\t<hostname> set the MQTT broker hostname");
+  wcli.add("reboot", &reboot, "\tperform a ESP32 reboot");
+  wcli.add("date", &printCurrentDate, "\tprint date and time from the system clock");
+  wcli.add("clear", &clearStorage, "\tClear non-volatile storage.");
+  wcli.add("set", &setSetting, "\t<name> <value> Set lightning sensor setting.");
+  wcli.add("get", &getSetting, "\t<name> Get lightning sensor setting.");
+
+  wcli.shell->clear();
   // Connect to WPA/WPA2 network
   wcli.begin();
-
-  // Enter your custom commands:
-  cmdBroker = wcli.cli.addCommand("broker", setBroker);
-  cmdBroker.setDescription("\t<hostname> set the MQTT broker hostname");
-  cmdReboot = wcli.cli.addCommand("reboot", reboot);
-  cmdReboot.setDescription("\tperform a ESP32 reboot");
-  cmdDate = wcli.cli.addCommand("date", printCurrentDate);
-  cmdDate.setDescription("\tprint date and time from the system clock");
-  cmdClear = wcli.cli.addCommand("clear", clearStorage);
-  cmdClear.setDescription("\tClear non-volatile storage.");
-  cmdSet = wcli.cli.addCommand("set", setSetting);
-  cmdSet.setDescription("\t<name> <value> Set lightning sensor setting.");
-  cmdGet = wcli.cli.addCommand("get", getSetting);
-  cmdGet.setDescription("\t<name> Get lightning sensor setting.");
-
+  
   DateTime.setTimeZone(TZ_AMERICA_CHICAGO);
   DateTime.begin();
 
@@ -387,29 +357,18 @@ void setup()
     For running in low power mode, you can disable (set output and LOW) the NEOPIXEL_I2C_POWER pin,
     this will turn off the separate 3.3V regulator that powers the QT connector's red wire
   */
-  pinMode(NEOPIXEL_I2C_POWER, OUTPUT);
-  digitalWrite(NEOPIXEL_I2C_POWER, HIGH);
 
   settings.tuningCapacitor = TUNING_CAPACITOR_DEFAULT;
   settings.reportDisturber = REPORT_DISTURBER_DEFAULT;
 
-  if (digitalRead(BUTTON) == HIGH) {
-    if (!sensor.begin(settings)) {
-      setErrorStatus(true);
-    }
-
-    // call the checkSensor function every 500 millis (0.5 second)
-    // There is a one second window of time to read the interrupt register
-    // after lightning is detected, and 1.5 after a disturber.
-    timer.every(500, checkSensor);
+  if (!sensor.begin(settings)) {
+    setErrorStatus(true);
   }
-  else {
-    if (!sensor.begin(settings, false)) {
-      setErrorStatus(true);
-    }
 
-    Serial.println("Switch pressed. Disabling Interrupts");
-  }
+  // call the checkSensor function every 500 millis (0.5 second)
+  // There is a one second window of time to read the interrupt register
+  // after lightning is detected, and 1.5 after a disturber.
+  timer.every(500, checkSensor);
 }
 
 void loop()
