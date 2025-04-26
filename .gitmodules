@@ -1,3 +1,0 @@
-[submodule "docs/esp32-wifi-cli"]
-	path = docs/esp32-wifi-cli
-	url = https://github.com/hpsaturn/esp32-wifi-cli.git
