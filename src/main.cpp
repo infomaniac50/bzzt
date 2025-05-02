@@ -529,6 +529,24 @@ void displayOsc(char *args, Stream *response) {
   }
 }
 
+void dig(char *args, Stream *response) {
+  String argVal = wcli.parseArgument(args);
+
+  argVal.trim();
+  
+  if (argVal.length() == 0) {
+    response->println("Missing argument <hostname>");
+    return;
+  }
+
+  IPAddress address;
+  int result = WiFi.hostByName(argVal.c_str(), address);
+  if (result == 1) {
+    response->printf("%s\n", address.toString());
+  } else {
+    response->printf("Error: %d\n", result);
+  }
+}
 #pragma endregion
 
 void setup()
@@ -554,6 +572,7 @@ void setup()
   wcli.add("set", &setSetting, "\t\t<name> <value> Set lightning sensor setting.");
   wcli.add("get", &getSetting, "\t\t<name> Get lightning sensor setting.");
   wcli.add("displayOsc", &displayOsc, "\t<value> <osc>");
+  wcli.add("dig", &dig, "\t<hostname> Lookup a hostname");
 
   wcli.shell->clear();
   // Connect to WPA/WPA2 network
