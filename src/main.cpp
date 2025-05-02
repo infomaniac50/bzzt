@@ -25,6 +25,13 @@ const char* DEFAULT_DATETIME_FORMAT = "%a %d %b %Y %r %Z";
 
 // Cloud art ripped from https://github.com/schachmat/wego/blob/bf192ea66e771a8031117845bfa04c603f903f41/frontends/ascii-art-table.go#L258
 // https://patorjk.com/software/taag/#p=display&f=ANSI%20Regular&t=BZZT
+/*
+     .-.        ██████  ███████ ███████ ████████
+    (   ).      ██   ██    ███     ███     ██
+   (___(__)     ██████    ███     ███      ██
+  ‚ʻ⚡ʻ‚⚡‚ʻ    ██   ██  ███     ███       ██
+  ‚ʻ‚ʻ⚡ʻ‚ʻ     ██████  ███████ ███████    ██
+*/
 const char logo[] =
 "                                                                           \r\n"
 "\033[38;5;244;1m     .-.     \033[0m   ██████  ███████ ███████ ████████\r\n"
