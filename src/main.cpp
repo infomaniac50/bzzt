@@ -170,6 +170,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
 
 void reboot(char *args, Stream *response){
   wcli.shell->clear();
+  wcli.client->stop();
   ESP.restart();
 }
 
