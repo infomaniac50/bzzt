@@ -6,11 +6,9 @@
 
 class LightningSensor
 {
-  private:
-    void attachInterruptPin(void);
-    void detachInterruptPin(void);
-
   public:
+    void detachInterruptPin(void);
+    void attachInterruptPin(void);
     int begin(SensorSettings sensorSettings, bool enableInterruptPin = true);
     SparkFun_AS3935& getSensor();
     bool getSensorEvent(SensorEvent *sensorEvent);

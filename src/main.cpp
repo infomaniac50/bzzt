@@ -250,24 +250,6 @@ void setSetting(char *args, Stream *response) {
     return;
   }
 
-  if (argName.equalsIgnoreCase("displayOscillatorAntenna") == 1) {
-    if (argValue.isEmpty()) {
-      response->println("Missing argument <value>");
-      return;
-    }
-
-    int value = argValue.toInt();
-    if (value < 0 || value > 1) {
-      response->println("The value argument must be 1 or 0, indicating true or false respectively.");
-      return;
-    }
-
-    SparkFun_AS3935 rawSensor = sensor.getSensor();
-    rawSensor.displayOscillator((bool) value, 3);
-
-    return;
-  }
-
   response->println("Setting name not recognized.");
 }
 
@@ -313,6 +295,47 @@ void getSetting(char *args, Stream *response) {
   response->println("Setting name not recognized.");
 }
 
+void displayOsc(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
+  
+  String argValue = operands.first();
+
+  if (argValue.isEmpty()) {
+    response->println("Missing argument <value>");
+    return;
+  }
+
+  int value = argValue.toInt();
+
+  if (value < 0 || value > 1) {
+    response->println("The value argument must be 1 or 0, indicating true or false respectively.");
+    return;
+  }
+
+  String argOsc = operands.second();
+
+  if (argOsc.isEmpty()) {
+    response->println("Missing argument <osc>");
+  }
+
+  int osc = argOsc.toInt();
+
+  if (osc < 1 || osc > 3) {
+    response->println("The osc argument must be between 1 and 3");
+  }
+
+  if (value == 1) {
+    sensor.detachInterruptPin();
+  }
+
+  SparkFun_AS3935 rawSensor = sensor.getSensor();
+  rawSensor.displayOscillator((bool) value, osc);
+
+  if (value == 0) {
+    sensor.attachInterruptPin();
+  }
+}
+
 #pragma endregion
 
 void setup()
@@ -337,6 +360,7 @@ void setup()
   wcli.add("clear", &clearStorage, "\tClear non-volatile storage.");
   wcli.add("set", &setSetting, "\t<name> <value> Set lightning sensor setting.");
   wcli.add("get", &getSetting, "\t<name> Get lightning sensor setting.");
+  wcli.add("displayOsc", &displayOsc, "\t<value> <osc>");
 
   wcli.shell->clear();
   // Connect to WPA/WPA2 network

@@ -44,16 +44,25 @@ void ARDUINO_ISR_ATTR AS3935_ISR()
   taskEXIT_CRITICAL_ISR(&sensorInterruptSpinlock);
 }
 
+bool interruptAttached;
+
 void LightningSensor::attachInterruptPin()
 {
-  // When lightning is detected the interrupt pin goes HIGH.
-  sensorInterruptTriggered = false; // clear trigger
-  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), AS3935_ISR, RISING);
+  if (!interruptAttached) {
+    // When lightning is detected the interrupt pin goes HIGH.
+    sensorInterruptTriggered = false; // clear trigger
+    attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), AS3935_ISR, RISING);
+    interruptAttached = true;
+  }
+
 }
 
 void LightningSensor::detachInterruptPin()
 {
-  detachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN));
+  if (interruptAttached) {
+    detachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN));
+    interruptAttached = false;
+  }
 }
 
 int LightningSensor::begin(SensorSettings sensorSettings, bool enableInterruptPin)
