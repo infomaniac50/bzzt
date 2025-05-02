@@ -15,7 +15,7 @@
 // The calibration value for my board is 88 picoFarads.
 const int TUNING_CAPACITOR_DEFAULT = 88;
 const bool REPORT_DISTURBER_DEFAULT = false;
-const char* HOSTNAME_DEFAULT = "green-mile";
+const char* HOSTNAME_DEFAULT = "bzzt";
 const String SYSTEM_HOSTNAME(HOSTNAME_DEFAULT);
 const char* TZ_AMERICA_CHICAGO = "CST6CDT,M3.2.0,M11.1.0";
 // Plucked from /usr/share/i18n/locales/en_US on a local linux box
