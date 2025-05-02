@@ -197,18 +197,126 @@ void setSetting(char *args, Stream *response) {
 
   if (argName.isEmpty()) {
     response->println("Missing argument <name>");
-    // noiseFloor
-    // watchdogThreshold
-    // spikeRejection = 1 - 11
-    // lightningThreshold
-    // tuningCapacitor
-    // sensorLocation
-    // reportDisturber = 1 or 0
-    // displayOscillatorAntenna = 1 or 0
+
+    response->println("\nValid Names:");
+    response->println("\tsensorLocation");
+    response->println("\ttuningCapacitor");
+    response->println("\tlightningThreshold");
+    response->println("\twatchdogThreshold");
+    response->println("\tnoiseFloor");
+    response->println("\tspikeRejection");
+    response->println("\treportDisturber");
+
     return;
   }
 
   String argValue = operands.second();
+
+  if (argName.equalsIgnoreCase("sensorLocation")) {
+    if (argValue.isEmpty()) {
+      response->println("Missing argument <value>");
+      return;
+    }
+
+    if (argValue.equalsIgnoreCase("INDOOR")) {
+      settings.sensorLocation = INDOOR;
+    } else if (!argValue.equalsIgnoreCase("OUTDOOR")) {
+      settings.sensorLocation = OUTDOOR;
+    } else {
+      response->println("Invalid argument <value>: You must enter either indoor or outdoor.");
+      return;
+    }
+
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    rawSensor.setIndoorOutdoor(settings.sensorLocation);
+
+    return;
+  }
+
+  if (argName.equalsIgnoreCase("tuningCapacitor")) {
+    if (argValue.isEmpty()) {
+      response->println("Missing argument <value>");
+      return;
+    }
+
+    int value = argValue.toInt();
+    if (value < 0 || value > 120) {
+      response->println("Invalid argument <value>: You must enter a number between 0 and 120.");
+      return;
+    }
+
+    if (value % 8 != 0) {
+      response->println("Invalid argument <value>: You must enter a number divisible by 8.");
+      return;
+    }
+
+    settings.tuningCapacitor = (uint8_t) value;
+
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    rawSensor.tuneCap(settings.tuningCapacitor);
+
+    return;
+  }
+
+  if (argName.equalsIgnoreCase("lightningThreshold")) {
+    if (argValue.isEmpty()) {
+      response->println("Missing argument <value>");
+      return;
+    }
+
+    int value = argValue.toInt();
+    if (value != 1 && value != 5 && value != 9 && value != 16) {
+      response->println("Invalid argument <value>: You must enter 1, 5, 9, or 16.");
+      return;
+    }
+
+    settings.lightningThreshold = (uint8_t) value;
+
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    rawSensor.lightningThreshold(settings.lightningThreshold);
+
+    return;
+  }
+
+  if (argName.equalsIgnoreCase("watchdogThreshold")) {
+    if (argValue.isEmpty()) {
+      response->println("Missing argument <value>");
+      return;
+    }
+
+    int value = argValue.toInt();
+    if (value < 0 || value > 10) {
+      response->println("Invalid argument <value>: You must enter a number between 0 and 10.");
+      return;
+    }
+
+    settings.watchdogThreshold = (uint8_t) value;
+
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    rawSensor.watchdogThreshold(settings.watchdogThreshold);
+
+    return;
+  }
+
+  if (argName.equalsIgnoreCase("noiseFloor")) {
+    if (argValue.isEmpty()) {
+      response->println("Missing argument <value>");
+      return;
+    }
+
+    int value = argValue.toInt();
+    if (value < 1 || value > 7) {
+      response->println("Invalid argument <value>: You must enter a number between 1 and 7.");
+      return;
+    }
+
+    settings.noiseFloor = (uint8_t) value;
+
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    rawSensor.setNoiseLevel(settings.noiseFloor);
+
+    return;
+  }
 
   if (argName.equalsIgnoreCase("spikeRejection")) {
     if (argValue.isEmpty()) {
@@ -260,18 +368,75 @@ void getSetting(char *args, Stream *response) {
   
   if (argName.isEmpty()) {
     response->println("Missing argument <name>");
-    // noiseFloor
-    // watchdogThreshold
-    // spikeRejection = 1 - 11
-    // lightningThreshold
-    // tuningCapacitor
-    // sensorLocation
-    // reportDisturber = 1 or 0
-    // displayOscillatorAntenna = 1 or 0
+
+    response->println("\nValid Names:");
+    response->println("\tsensorLocation");
+    response->println("\ttuningCapacitor");
+    response->println("\tlightningThreshold");
+    response->println("\twatchdogThreshold");
+    response->println("\tnoiseFloor");
+    response->println("\tspikeRejection");
+    response->println("\treportDisturber");
+
     return;
   }
 
   String argValue = operands.second();
+
+  if (argName.equalsIgnoreCase("sensorLocation")) {
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    settings.sensorLocation = rawSensor.readIndoorOutdoor();
+
+    switch (settings.sensorLocation)
+    {
+    case INDOOR:
+      response->println("sensorLocation: INDOOR");
+      break;
+    case OUTDOOR:
+      response->println("sensorLocation: OUTDOOR");
+    default:
+      response->printf("Invalid Setting! sensorLocation: %#x");
+      break;
+    }
+
+    return;
+  }
+
+  if (argName.equalsIgnoreCase("tuningCapacitor")) {
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    settings.tuningCapacitor = rawSensor.readTuneCap();
+
+    response->printf("tuningCapacitor: %upF\n", settings.tuningCapacitor * 8);
+
+    return;
+  }
+
+  if (argName.equalsIgnoreCase("lightningThreshold")) {
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    settings.lightningThreshold = rawSensor.readLightningThreshold();
+
+    response->printf("lightningThreshold: %u\n", settings.lightningThreshold);
+
+    return;
+  }
+
+  if (argName.equalsIgnoreCase("watchdogThreshold")) {
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    settings.watchdogThreshold = rawSensor.readWatchdogThreshold();
+
+    response->printf("watchdogThreshold: %u\n", settings.watchdogThreshold);
+
+    return;
+  }
+
+  if (argName.equalsIgnoreCase("noiseFloor")) {
+    SparkFun_AS3935 rawSensor = sensor.getSensor();
+    settings.noiseFloor = rawSensor.readNoiseLevel();
+
+    response->printf("noiseFloor: %u\n", settings.noiseFloor);
+
+    return;
+  }
 
   if (argName.equalsIgnoreCase("spikeRejection") == 1) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
