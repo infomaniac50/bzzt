@@ -521,10 +521,10 @@ void setup()
   // Enter your custom commands:
   wcli.add("broker", &setBroker, "\t<hostname> set the MQTT broker hostname");
   wcli.add("reboot", &reboot, "\tperform a ESP32 reboot");
-  wcli.add("date", &printCurrentDate, "\tprint date and time from the system clock");
-  wcli.add("clear", &clearStorage, "\tClear non-volatile storage.");
-  wcli.add("set", &setSetting, "\t<name> <value> Set lightning sensor setting.");
-  wcli.add("get", &getSetting, "\t<name> Get lightning sensor setting.");
+  wcli.add("date", &printCurrentDate, "\t\tprint date and time from the system clock");
+  wcli.add("clear", &clearStorage, "\t\tClear non-volatile storage.");
+  wcli.add("set", &setSetting, "\t\t<name> <value> Set lightning sensor setting.");
+  wcli.add("get", &getSetting, "\t\t<name> Get lightning sensor setting.");
   wcli.add("displayOsc", &displayOsc, "\t<value> <osc>");
 
   wcli.shell->clear();
