@@ -1,4 +1,4 @@
-# Green Mile
+![logo.png](logo.png)
 
 Publish MQTT messages about thunderstorm lightning in your area using an ESP32 and a Digital Lightning Sensor AS3935 from www.playingwithfusion.com
 
@@ -9,23 +9,28 @@ Publish MQTT messages about thunderstorm lightning in your area using an ESP32 a
    ```cpp
    #define TUNING_CAPACITOR_DEFAULT 88
    #define REPORT_DISTURBER_DEFAULT false
-   #define HOSTNAME_DEFAULT "green-mile"
+   #define HOSTNAME_DEFAULT "bzzt"
    ```
+
 2. Upload the sketch to your board.
+
 3. Open the serial terminal and update your settings. The program uses [ESP32WifiCLI - A Basic CLI for WiFi setup over ESP32](https://github.com/hpsaturn/esp32-wifi-cli) so you don't commit sensitive data to GitHub. (Type ``help`` in the terminal if you get stuck)
-   1. Set the WiFi SSID ``setSSID "YOUR SSID"`` *You must include the quotes*
-   2. Set the WiFi password ``setPASW "YOUR PASW"`` *You must include the quotes*
-   3. Save the WiFi settings ``connect``
-   4. Set the MQTT broker hostname ``broker <hostname>`` *Do not use quotes here*
-   5. Reset the device by pressing the reset button
+   
+   1. Set the WiFi SSID and password nmcli connect Your SSID password "Your Password"
+   2. Set the MQTT broker hostname ``broker <hostname>`` *Do not use quotes here*
+   3. Reset the device by pressing the reset button
+
 4. After configuration you should move it away from your computer and other noisy RFI producing devices. You can plug it into any standard USB phone charger or power supply that the ESP32 accepts. The user LED will light up when the sketch connects to your MQTT server.
+
 5. Publish a topic with the name ``lightning/ping`` and no payload. If the device is setup properly it will respond with a topic named ``lightning/pong`` and a payload with the number of cores in the CPU and the model number of the ESP32 daughter board.
 
 After completing setup, you just have to wait for a storm to show up or buy a [Digital Lightning Sensor Tester Arduino Shield for AS3935](https://www.playingwithfusion.com/productview.php?pdid=55&catid=1012). The device will publish messages about stormfront distance and a unit-less *energy* metric to your MQTT server. You can consume those messages from another device and post them to Twitter or draw something on your Magic Mirror, etc.
 
+*Onomatopoeia* (pronounced: "on-uh-mat-uh-PEE-uh")  
 
-*You've been declared competent, son, 'know what that means? 'Means you gonna ride the lightning.*  
-    -- The Green Mile (1999)
+- A word that imitates or suggests the sound it represents.
+
+*BZZT* - For electric buzz
 
 ## Parts
 
@@ -39,6 +44,20 @@ Breakout board for the AS3935 digital lightning sensor based on the AMS referenc
 We store calibration values for each board shipped. The calibration value (in pF) is written on the lower corner of the product label. This information can also be provided at your request by contacting Technical Support and referencing your original order number.
 
 ### ESP32
+
+[ESP32-S3-DevKitC-1-N8R8 rev 1.1](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s3/esp32-s3-devkitc-1/user_guide.html)
+
+The ESP32-S3-DevKitC-1 is an entry-level development board equipped with ESP32-S3-WROOM-1, ESP32-S3-WROOM-1U, or ESP32-S3-WROOM-2, a general-purpose Wi-Fi + Bluetooth® Low Energy MCU module that integrates complete Wi-Fi and Bluetooth Low Energy functions.
+
+Most of the I/O pins on the module are broken out to the pin headers on both sides of this board for easy interfacing. Developers can either connect peripherals with jumper wires or mount ESP32-S3-DevKitC-1 on a breadboard.
+
+**Component Note**
+
+For boards with Octal SPI flash/PSRAM memory embedded ESP32-S3-WROOM-1/1U modules, and boards with ESP32-S3-WROOM-2 modules, the pins GPIO35, GPIO36 and GPIO37 are used for the internal communication between ESP32-S3 and SPI flash/PSRAM memory, thus not available for external use.
+
+**Hardware Revision Note**
+
+Both the initial and v1.1 versions of ESP32-S3-DevKitC-1 are available on the market. The main difference lies in the GPIO assignment for the RGB LED: the initial version uses GPIO48, whereas v1.1 uses GPIO38.
 
 [Adafruit ESP32 Feather V2](https://www.adafruit.com/product/5400)
 
