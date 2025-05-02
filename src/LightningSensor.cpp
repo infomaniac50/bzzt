@@ -112,7 +112,7 @@ int LightningSensor::begin(SensorSettings sensorSettings, bool enableInterruptPi
   lightning.lightningThreshold(sensorSettings.lightningThreshold);
 
 
-  bool calibrationSuccessful = lightning.calibrateOsc();
+  bool calibrationSuccessful = lightning.wakeUp();
 
   // When the distance to the storm is estimated, it takes into account other
   // lightning that was sensed in the past 15 minutes. If you want to reset
