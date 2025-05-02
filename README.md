@@ -16,7 +16,7 @@ Publish MQTT messages about thunderstorm lightning in your area using an ESP32 a
 
 3. Open the serial terminal and update your settings. The program uses [ESP32WifiCLI - A Basic CLI for WiFi setup over ESP32](https://github.com/hpsaturn/esp32-wifi-cli) so you don't commit sensitive data to GitHub. (Type ``help`` in the terminal if you get stuck)
    
-   1. Set the WiFi SSID and password nmcli connect Your SSID password "Your Password"
+   1. Set the WiFi SSID and password ``nmcli connect Your SSID password "Your Password"``
    2. Set the MQTT broker hostname ``broker <hostname>`` *Do not use quotes here*
    3. Reset the device by pressing the reset button
 
