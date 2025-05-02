@@ -406,7 +406,7 @@ void getSetting(char *args, Stream *response) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
     settings.tuningCapacitor = rawSensor.readTuneCap();
 
-    response->printf("tuningCapacitor: %upF\n", settings.tuningCapacitor * 8);
+    response->printf("tuningCapacitor: %upF\n", settings.tuningCapacitor);
 
     return;
   }
