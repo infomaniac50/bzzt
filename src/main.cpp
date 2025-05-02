@@ -106,6 +106,7 @@ void onPubSubCallback(char *topic, byte *payload, unsigned int length)
     stream.printf("Cores: %u\n", ESP.getChipCores());
     stream.printf("Model: %s\n", ESP.getChipModel());
     stream.printf("Revision: %u\n", ESP.getChipRevision());
+    stream.printf("IP: %s\n", WiFi.localIP().toString().c_str());
 
     mqtt.publish("lightning/pong", stream.str().c_str(), false);
   }
