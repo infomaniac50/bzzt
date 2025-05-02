@@ -152,6 +152,11 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
           }
         }
 
+        if (!DateTime.isTimeValid()) {
+          DateTime.setTimeZone(TZ_AMERICA_CHICAGO);
+          DateTime.begin();
+        }
+
         neopixelWrite(LED_BUILTIN, 0, RGB_BRIGHTNESS, 0);
       }
       else
@@ -546,9 +551,6 @@ void setup()
   wcli.shell->attachLogo(logo);
   wcli.begin();
   if (wcli.isTelnetRunning()) wcli.shellTelnet->attachLogo(logo);
-
-  DateTime.setTimeZone(TZ_AMERICA_CHICAGO);
-  DateTime.begin();
 
   /*
     https://learn.adafruit.com/adafruit-esp32-feather-v2/pinouts#stemma-qt-connector-3112257
