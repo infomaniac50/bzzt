@@ -23,6 +23,18 @@ const char* TZ_AMERICA_CHICAGO = "CST6CDT,M3.2.0,M11.1.0";
 // d_t_fmt "%a %d %b %Y %r %Z"
 const char* DEFAULT_DATETIME_FORMAT = "%a %d %b %Y %r %Z";
 
+// Cloud art ripped from https://github.com/schachmat/wego/blob/bf192ea66e771a8031117845bfa04c603f903f41/frontends/ascii-art-table.go#L258
+// https://patorjk.com/software/taag/#p=display&f=ANSI%20Regular&t=BZZT
+const char logo[] =
+"                                                                           \r\n"
+"\033[38;5;244;1m     .-.     \033[0m   ██████  ███████ ███████ ████████\r\n"
+"\033[38;5;244;1m    (   ).   \033[0m   ██   ██    ███     ███     ██\r\n"
+"\033[38;5;244;1m   (___(__)  \033[0m   ██████    ███     ███      ██\r\n"
+"\033[38;5;33;1m  ‚ʻ\033[38;5;228;5m⚡\033[38;5;33;25mʻ‚\033[38;5;228;5m⚡\033[38;5;33;25m‚ʻ   \033[0m ██   ██  ███     ███       ██\r\n"
+"\033[38;5;33;1m  ‚ʻ‚ʻ\033[38;5;228;5m⚡\033[38;5;33;25mʻ‚ʻ   \033[0m  ██████  ███████ ███████    ██\r\n"
+"                                                                           \r\n"
+"\n"
+"";
 
 SensorSettings settings;
 LightningSensor sensor;
@@ -530,8 +542,10 @@ void setup()
 
   wcli.shell->clear();
   // Connect to WPA/WPA2 network
+  wcli.shell->attachLogo(logo);
   wcli.begin();
-  
+  if (wcli.isTelnetRunning()) wcli.shellTelnet->attachLogo(logo);
+
   DateTime.setTimeZone(TZ_AMERICA_CHICAGO);
   DateTime.begin();
 
