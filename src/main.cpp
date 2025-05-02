@@ -103,9 +103,9 @@ void onPubSubCallback(char *topic, byte *payload, unsigned int length)
   if (strcmp(topic, "lightning/ping") == 0)
   {
     StringPrint stream;
-    stream.printf("Cores: %d\n", ESP.getChipCores());
+    stream.printf("Cores: %u\n", ESP.getChipCores());
     stream.printf("Model: %s\n", ESP.getChipModel());
-    stream.printf("Revision: %d\n", ESP.getChipRevision());
+    stream.printf("Revision: %u\n", ESP.getChipRevision());
 
     mqtt.publish("lightning/pong", stream.str().c_str(), false);
   }
@@ -277,7 +277,7 @@ void getSetting(char *args, Stream *response) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
     settings.spikeRejection = rawSensor.readSpikeRejection();
 
-    response->printf("spikeRejection: %d\n", settings.spikeRejection);
+    response->printf("spikeRejection: %u\n", settings.spikeRejection);
 
     return;
   }
