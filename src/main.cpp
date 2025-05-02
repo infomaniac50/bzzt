@@ -136,6 +136,7 @@ void onPubSubCallback(char *topic, byte *payload, unsigned int length)
 #pragma region "Wifi CLI Callbacks"
 class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
 {
+    // This method is run by wcli.loop() every 1000 millseconds
     void onWifiStatus(bool isConnected)
     {
       if (isConnected)
