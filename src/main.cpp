@@ -34,15 +34,15 @@ const char* DEFAULT_DATETIME_FORMAT = "%a %d %b %Y %r %Z";
   ‚ʻ‚ʻ⚡ʻ‚ʻ     ██████  ███████ ███████    ██
 */
 const char logo[] =
-"                                                                           \r\n"
-"\033[38;5;244;1m     .-.     \033[0m   ██████  ███████ ███████ ████████\r\n"
-"\033[38;5;244;1m    (   ).   \033[0m   ██   ██    ███     ███     ██\r\n"
-"\033[38;5;244;1m   (___(__)  \033[0m   ██████    ███     ███      ██\r\n"
-"\033[38;5;33;1m  ‚ʻ\033[38;5;228;5m⚡\033[38;5;33;25mʻ‚\033[38;5;228;5m⚡\033[38;5;33;25m‚ʻ   \033[0m ██   ██  ███     ███       ██\r\n"
-"\033[38;5;33;1m  ‚ʻ‚ʻ\033[38;5;228;5m⚡\033[38;5;33;25mʻ‚ʻ   \033[0m  ██████  ███████ ███████    ██\r\n"
-"                                                                           \r\n"
-"\n"
-"";
+  "                                                                           \r\n"
+  "\033[38;5;244;1m     .-.     \033[0m   ██████  ███████ ███████ ████████\r\n"
+  "\033[38;5;244;1m    (   ).   \033[0m   ██   ██    ███     ███     ██\r\n"
+  "\033[38;5;244;1m   (___(__)  \033[0m   ██████    ███     ███      ██\r\n"
+  "\033[38;5;33;1m  ‚ʻ\033[38;5;228;5m⚡\033[38;5;33;25mʻ‚\033[38;5;228;5m⚡\033[38;5;33;25m‚ʻ   \033[0m ██   ██  ███     ███       ██\r\n"
+  "\033[38;5;33;1m  ‚ʻ‚ʻ\033[38;5;228;5m⚡\033[38;5;33;25mʻ‚ʻ   \033[0m  ██████  ███████ ███████    ██\r\n"
+  "                                                                           \r\n"
+  "\n"
+  "";
 
 SensorSettings settings;
 LightningSensor sensor;
@@ -182,7 +182,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
     void onNewWifi(String ssid, String passw) { }
 };
 
-void reboot(char *args, Stream *response){
+void reboot(char *args, Stream *response) {
   wcli.shell->clear();
   wcli.client->stop();
   ESP.restart();
@@ -193,7 +193,7 @@ void setBroker(char *args, Stream *response)
   String argVal = wcli.parseArgument(args);
 
   argVal.trim();
-  
+
   if (argVal.length() == 0) {
     response->println("Missing argument <BROKER_HOST>");
     return;
@@ -391,9 +391,9 @@ void setSetting(char *args, Stream *response) {
 
 void getSetting(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
-  
+
   String argName = operands.first();
-  
+
   if (argName.isEmpty()) {
     response->println("Missing argument <name>");
 
@@ -417,14 +417,14 @@ void getSetting(char *args, Stream *response) {
 
     switch (settings.sensorLocation)
     {
-    case INDOOR:
-      response->println("sensorLocation: INDOOR");
-      break;
-    case OUTDOOR:
-      response->println("sensorLocation: OUTDOOR");
-    default:
-      response->printf("Invalid Setting! sensorLocation: %#x");
-      break;
+      case INDOOR:
+        response->println("sensorLocation: INDOOR");
+        break;
+      case OUTDOOR:
+        response->println("sensorLocation: OUTDOOR");
+      default:
+        response->printf("Invalid Setting! sensorLocation: %#x");
+        break;
     }
 
     return;
@@ -490,7 +490,7 @@ void getSetting(char *args, Stream *response) {
 
 void displayOsc(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
-  
+
   String argValue = operands.first();
 
   if (argValue.isEmpty()) {
@@ -533,7 +533,7 @@ void dig(char *args, Stream *response) {
   String argVal = wcli.parseArgument(args);
 
   argVal.trim();
-  
+
   if (argVal.length() == 0) {
     response->println("Missing argument <hostname>");
     return;
