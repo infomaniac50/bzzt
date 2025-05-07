@@ -102,8 +102,7 @@ bool checkSensor(void *)
       doc["type"] = statusToString(event.type);
       doc["distance"] = distanceToString(event.distance);
       doc["energy"] = event.energy;
-      int64_t time_us = (int64_t)event.timestamp.tv_sec * 1000000L + (int64_t)event.timestamp.tv_usec;
-      doc["timestamp"] = time_us;
+      doc["timestamp"] = ((float) event.timestamp.tv_sec) + (event.timestamp.tv_usec / 1000000);
 
       mqtt.beginPublish("lightning/event", measureJson(doc), false);
       BufferingPrint bufferedClient(mqtt, 32);
