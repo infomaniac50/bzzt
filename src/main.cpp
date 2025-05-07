@@ -17,7 +17,6 @@ const int TUNING_CAPACITOR_DEFAULT = 88;
 const bool REPORT_DISTURBER_DEFAULT = false;
 const char* HOSTNAME_DEFAULT = "bzzt";
 const String SYSTEM_HOSTNAME(HOSTNAME_DEFAULT);
-const char* TZ_AMERICA_CHICAGO = "CST6CDT,M3.2.0,M11.1.0";
 // Plucked from /usr/share/i18n/locales/en_US on a local linux box
 // % Appropriate date and time representation (%c)
 // d_t_fmt "%a %d %b %Y %r %Z"
@@ -162,7 +161,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
         }
 
         if (!DateTime.isTimeValid()) {
-          DateTime.setTimeZone(TZ_AMERICA_CHICAGO);
+          DateTime.setTimeZone("UTC0");
           DateTime.begin();
         }
 
