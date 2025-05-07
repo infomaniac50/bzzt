@@ -92,7 +92,7 @@ bool checkSensor(void *)
 
   if (interrupted)
   {
-    if (mqtt.connect(SYSTEM_HOSTNAME.c_str()))
+    if (mqtt.connected())
     {
       StaticJsonDocument<256> doc;
 
