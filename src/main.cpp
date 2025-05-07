@@ -167,6 +167,14 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
         if (!DateTime.isTimeValid()) {
           DateTime.setTimeZone("UTC0");
           DateTime.setServer(TIMESERVER1, TIMESERVER2, TIMESERVER3);
+
+          /*
+            The Espressif SDK uses the lwIP SNTP library internally.
+            Any application that initializes the SNTP service periodically synchronizes the time.
+            The time synchronization period is determined by CONFIG_LWIP_SNTP_UPDATE_DELAY (the default value is one hour).
+
+            https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-reference/system/system_time.html#sntp-time-synchronization
+          */
           DateTime.begin();
         }
 
