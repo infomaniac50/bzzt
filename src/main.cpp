@@ -88,13 +88,14 @@ void setErrorStatus(bool isErrored = true)
 #pragma endregion
 
 #pragma region "MQTT Management"
-bool checkSensor(void *)
+void checkSensor()
 {
-  SensorEvent event;
-  auto interrupted = sensor.getSensorEvent(&event);
+  // Run the interrupt check every loop for faster latency.
+  // We miss later strikes if more of them happen right after we process the first one.
+  if (sensor.isTriggered()) {
+    SensorEvent event;
+    sensor.getSensorEvent(&event);
 
-  if (interrupted)
-  {
     if (mqtt.connected())
     {
       StaticJsonDocument<256> doc;
@@ -116,8 +117,6 @@ bool checkSensor(void *)
       setErrorStatus(true);
     }
   }
-
-  return true; // repeat? true
 }
 
 void onPubSubCallback(char *topic, byte *payload, unsigned int length)
@@ -610,15 +609,11 @@ void setup()
   if (!sensor.begin(settings)) {
     setErrorStatus(true);
   }
-
-  // call the checkSensor function every 500 millis (0.5 second)
-  // There is a one second window of time to read the interrupt register
-  // after lightning is detected, and 1.5 after a disturber.
-  timer.every(500, checkSensor);
 }
 
 void loop()
 {
+  checkSensor();
   mqtt.loop();
   timer.tick();
   wcli.loop();

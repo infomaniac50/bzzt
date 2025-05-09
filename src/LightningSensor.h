@@ -11,6 +11,7 @@ class LightningSensor
     void attachInterruptPin(void);
     int begin(SensorSettings sensorSettings, bool enableInterruptPin = true);
     SparkFun_AS3935& getSensor();
-    bool getSensorEvent(SensorEvent *sensorEvent);
+    void getSensorEvent(SensorEvent *sensorEvent);
+    bool isTriggered(void);
 };
 #endif

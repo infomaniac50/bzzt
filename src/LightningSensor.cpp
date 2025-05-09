@@ -144,19 +144,19 @@ SparkFun_AS3935& LightningSensor::getSensor() {
   return lightning;
 }
 
-bool LightningSensor::getSensorEvent(SensorEvent *sensorEvent)
+bool LightningSensor::isTriggered()
+{
+  return sensorInterruptTriggered;
+}
+
+void LightningSensor::getSensorEvent(SensorEvent *sensorEvent)
 {
   taskENTER_CRITICAL(&sensorInterruptSpinlock);
-  bool interrupted = sensorInterruptTriggered;
   sensorInterruptTriggered = false;
 
   sensorEvent->timestamp.tv_sec = sensorInterruptTimestamp.tv_sec;
   sensorEvent->timestamp.tv_usec = sensorInterruptTimestamp.tv_usec;
   taskEXIT_CRITICAL(&sensorInterruptSpinlock);
-
-  if (!interrupted) {
-    return false;
-  }
 
   // Hardware has alerted us to an event, now we read the interrupt register
   // to see exactly what it is.
@@ -178,6 +178,4 @@ bool LightningSensor::getSensorEvent(SensorEvent *sensorEvent)
     sensorEvent->distance = 0;
     sensorEvent->energy = 0;
   }
-
-  return interrupted;
 }
