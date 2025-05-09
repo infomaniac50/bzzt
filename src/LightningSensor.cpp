@@ -27,21 +27,13 @@ const int INTERRUPT_PIN = 14;
 SparkFun_AS3935 lightning(AS3935_ADDR);
 
 // interrupt trigger global var
-static portMUX_TYPE sensorInterruptSpinlock = portMUX_INITIALIZER_UNLOCKED;
 volatile bool sensorInterruptTriggered = false;
-volatile struct timeval sensorInterruptTimestamp;
 
 // this is irq handler for AS3935 interrupts, has to return void and take no arguments
 // always make code in interrupt handlers fast and short
 void ARDUINO_ISR_ATTR AS3935_ISR()
 {
-  taskENTER_CRITICAL_ISR(&sensorInterruptSpinlock);
   sensorInterruptTriggered = true;
-  struct timeval now;
-  gettimeofday(&now, nullptr);
-  sensorInterruptTimestamp.tv_sec = now.tv_sec;
-  sensorInterruptTimestamp.tv_usec = now.tv_usec;
-  taskEXIT_CRITICAL_ISR(&sensorInterruptSpinlock);
 }
 
 bool interruptAttached;
@@ -151,12 +143,12 @@ bool LightningSensor::isTriggered()
 
 void LightningSensor::getSensorEvent(SensorEvent *sensorEvent)
 {
-  taskENTER_CRITICAL(&sensorInterruptSpinlock);
   sensorInterruptTriggered = false;
 
-  sensorEvent->timestamp.tv_sec = sensorInterruptTimestamp.tv_sec;
-  sensorEvent->timestamp.tv_usec = sensorInterruptTimestamp.tv_usec;
-  taskEXIT_CRITICAL(&sensorInterruptSpinlock);
+  struct timeval now;
+  gettimeofday(&now, nullptr);
+  sensorEvent->timestamp.tv_sec = now.tv_sec;
+  sensorEvent->timestamp.tv_usec = now.tv_usec;
 
   // Hardware has alerted us to an event, now we read the interrupt register
   // to see exactly what it is.
