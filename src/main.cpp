@@ -252,16 +252,17 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks
           {
             mqtt.setServer(broker.c_str(), 1883);
             mqtt.setCallback(onPubSubCallback);
+
+            if (mqtt.connect(SYSTEM_HOSTNAME.c_str()) && mqtt.subscribe("lightning/ping"))
+            {
+              setErrorStatus(false);
+            }
+            else
+            {
+              setErrorStatus(true);
+            }
           }
 
-          if (mqtt.connect(SYSTEM_HOSTNAME.c_str()) && mqtt.subscribe("lightning/ping"))
-          {
-            setErrorStatus(false);
-          }
-          else
-          {
-            setErrorStatus(true);
-          }
         }
 
         if (!DateTime.isTimeValid()) {
