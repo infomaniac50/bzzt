@@ -793,11 +793,11 @@ void setup()
   wcli.add("reboot", &reboot, "\tperform a ESP32 reboot");
   wcli.add("date", &printCurrentDate, "\t\tprint date and time from the system clock");
   wcli.add("clear", &clearStorage, "\t\tClear non-volatile storage.");
-  wcli.add("set", &setSetting, "\t\t<name> <value> Set lightning sensor setting.");
-  wcli.add("get", &getSetting, "\t\t<name> Get lightning sensor setting.");
-  wcli.add("save", &saveSettings, "\tSave sensor settings to non-volitile storage.");
+  wcli.add("set", &setSetting, "\t\t<name> <value> Set a setting.");
+  wcli.add("get", &getSetting, "\t\t<name> Get a setting.");
+  wcli.add("save", &saveSettings, "\t\tSave settings to non-volitile storage.");
   wcli.add("displayOsc", &displayOsc, "\t<value> <osc>");
-  wcli.add("dig", &dig, "\t<hostname> Lookup a hostname");
+  wcli.add("dig", &dig, "\t\t<hostname> Lookup a hostname");
 
   wcli.shell->clear();
   // Connect to WPA/WPA2 network
