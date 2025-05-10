@@ -800,9 +800,31 @@ void setup()
   wcli.add("dig", &dig, "\t\t<hostname> Lookup a hostname");
 
   wcli.shell->clear();
+
+  if (!wcli.isConfigured()) {
+    Shellminator::setTerminalCharacterColor(&Serial, Shellminator::REGULAR, Shellminator::YELLOW);
+    Serial.println("WiFi is not configured. Please use nmcli to setup WiFi now.");
+    Shellminator::setTerminalCharacterColor(&Serial, Shellminator::REGULAR, Shellminator::WHITE);
+  }
+  
+  if (systemSettings.brokerHostname.isEmpty()) {
+    Shellminator::setTerminalCharacterColor(&Serial, Shellminator::REGULAR, Shellminator::YELLOW);
+    Serial.print("The MQTT broker is not set. Please use " );
+    Shellminator::setTerminalCharacterColor(&Serial, Shellminator::UNDERLINE, Shellminator::YELLOW);
+    Serial.print("set brokerHostname \"<broker hostname>\"");
+    Shellminator::setTerminalCharacterColor(&Serial, Shellminator::REGULAR, Shellminator::YELLOW);
+    Serial.println(" to setup MQTT now.");
+    Shellminator::setTerminalCharacterColor(&Serial, Shellminator::REGULAR, Shellminator::WHITE);
+  }
+
   // Connect to WPA/WPA2 network
   wcli.shell->attachLogo(logo);
   wcli.begin();
+
+  while (!wcli.isConfigured() || !WiFi.isConnected() || systemSettings.brokerHostname.isEmpty()) {
+    wcli.loop();
+  }
+
   if (wcli.isTelnetRunning()) wcli.shellTelnet->attachLogo(logo);
 
   /*
