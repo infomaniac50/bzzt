@@ -110,7 +110,7 @@ int LightningSensor::begin(SensorSettings sensorSettings, bool enableInterruptPi
   // lightning that was sensed in the past 15 minutes. If you want to reset
   // time, then you can call this function.
 
-  lightning.clearStatistics(true);
+  // lightning.clearStatistics(true);
 
   // The power down function has a BIG "gotcha". When you wake up the board
   // after power down, the internal oscillators will be recalibrated. They are
