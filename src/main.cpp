@@ -11,10 +11,8 @@
 #include <ArduinoJson.h>
 #include <StreamUtils.h>
 #include <DateTime.h>
+#include <SensorSettings.h>
 
-// The calibration value for my board is 88 picoFarads.
-const int TUNING_CAPACITOR_DEFAULT = 88;
-const bool REPORT_DISTURBER_DEFAULT = false;
 const char* HOSTNAME_DEFAULT = "bzzt";
 const String SYSTEM_HOSTNAME(HOSTNAME_DEFAULT);
 // Plucked from /usr/share/i18n/locales/en_US on a local linux box
@@ -47,7 +45,8 @@ const char logo[] =
   "\n"
   "";
 
-SensorSettings settings;
+SensorSettings sensorSettings;
+SensorPreferences sensorPreferences;
 LightningSensor sensor;
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
@@ -329,6 +328,13 @@ void printCurrentDate(char *args, Stream *response) {
 
 void clearStorage(char *args, Stream *response) {
   wcli.clearSettings();
+  sensorPreferences.clear();
+
+  response->println("All settings cleared!");
+}
+
+void saveSettings(char *args, Stream *response) {
+  sensorPreferences.save(&sensorSettings);
 }
 
 void setSetting(char *args, Stream *response) {
@@ -360,16 +366,16 @@ void setSetting(char *args, Stream *response) {
     }
 
     if (argValue.equalsIgnoreCase("INDOOR")) {
-      settings.sensorLocation = INDOOR;
+      sensorSettings.sensorLocation = INDOOR;
     } else if (!argValue.equalsIgnoreCase("OUTDOOR")) {
-      settings.sensorLocation = OUTDOOR;
+      sensorSettings.sensorLocation = OUTDOOR;
     } else {
       response->println("Invalid argument <value>: You must enter either indoor or outdoor.");
       return;
     }
 
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    rawSensor.setIndoorOutdoor(settings.sensorLocation);
+    rawSensor.setIndoorOutdoor(sensorSettings.sensorLocation);
 
     return;
   }
@@ -391,10 +397,10 @@ void setSetting(char *args, Stream *response) {
       return;
     }
 
-    settings.tuningCapacitor = (uint8_t) value;
+    sensorSettings.tuningCapacitor = (uint8_t) value;
 
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    rawSensor.tuneCap(settings.tuningCapacitor);
+    rawSensor.tuneCap(sensorSettings.tuningCapacitor);
 
     return;
   }
@@ -411,10 +417,10 @@ void setSetting(char *args, Stream *response) {
       return;
     }
 
-    settings.lightningThreshold = (uint8_t) value;
+    sensorSettings.lightningThreshold = (uint8_t) value;
 
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    rawSensor.lightningThreshold(settings.lightningThreshold);
+    rawSensor.lightningThreshold(sensorSettings.lightningThreshold);
 
     return;
   }
@@ -431,10 +437,10 @@ void setSetting(char *args, Stream *response) {
       return;
     }
 
-    settings.watchdogThreshold = (uint8_t) value;
+    sensorSettings.watchdogThreshold = (uint8_t) value;
 
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    rawSensor.watchdogThreshold(settings.watchdogThreshold);
+    rawSensor.watchdogThreshold(sensorSettings.watchdogThreshold);
 
     return;
   }
@@ -451,10 +457,10 @@ void setSetting(char *args, Stream *response) {
       return;
     }
 
-    settings.noiseFloor = (uint8_t) value;
+    sensorSettings.noiseFloor = (uint8_t) value;
 
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    rawSensor.setNoiseLevel(settings.noiseFloor);
+    rawSensor.setNoiseLevel(sensorSettings.noiseFloor);
 
     return;
   }
@@ -471,10 +477,10 @@ void setSetting(char *args, Stream *response) {
       return;
     }
 
-    settings.spikeRejection = (uint8_t) value;
+    sensorSettings.spikeRejection = (uint8_t) value;
 
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    rawSensor.spikeRejection(settings.spikeRejection);
+    rawSensor.spikeRejection(sensorSettings.spikeRejection);
 
     return;
   }
@@ -491,10 +497,10 @@ void setSetting(char *args, Stream *response) {
       return;
     }
 
-    settings.reportDisturber = (bool) value;
+    sensorSettings.reportDisturber = (bool) value;
 
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    rawSensor.maskDisturber(!settings.reportDisturber);
+    rawSensor.maskDisturber(!sensorSettings.reportDisturber);
 
     return;
   }
@@ -524,9 +530,9 @@ void getSetting(char *args, Stream *response) {
 
   if (argName.equalsIgnoreCase("sensorLocation")) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    settings.sensorLocation = rawSensor.readIndoorOutdoor();
+    sensorSettings.sensorLocation = rawSensor.readIndoorOutdoor();
 
-    switch (settings.sensorLocation)
+    switch (sensorSettings.sensorLocation)
     {
       case INDOOR:
         response->println("sensorLocation: INDOOR");
@@ -543,45 +549,45 @@ void getSetting(char *args, Stream *response) {
 
   if (argName.equalsIgnoreCase("tuningCapacitor")) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    settings.tuningCapacitor = rawSensor.readTuneCap();
+    sensorSettings.tuningCapacitor = rawSensor.readTuneCap();
 
-    response->printf("tuningCapacitor: %upF\n", settings.tuningCapacitor);
+    response->printf("tuningCapacitor: %upF\n", sensorSettings.tuningCapacitor);
 
     return;
   }
 
   if (argName.equalsIgnoreCase("lightningThreshold")) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    settings.lightningThreshold = rawSensor.readLightningThreshold();
+    sensorSettings.lightningThreshold = rawSensor.readLightningThreshold();
 
-    response->printf("lightningThreshold: %u\n", settings.lightningThreshold);
+    response->printf("lightningThreshold: %u\n", sensorSettings.lightningThreshold);
 
     return;
   }
 
   if (argName.equalsIgnoreCase("watchdogThreshold")) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    settings.watchdogThreshold = rawSensor.readWatchdogThreshold();
+    sensorSettings.watchdogThreshold = rawSensor.readWatchdogThreshold();
 
-    response->printf("watchdogThreshold: %u\n", settings.watchdogThreshold);
+    response->printf("watchdogThreshold: %u\n", sensorSettings.watchdogThreshold);
 
     return;
   }
 
   if (argName.equalsIgnoreCase("noiseFloor")) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    settings.noiseFloor = rawSensor.readNoiseLevel();
+    sensorSettings.noiseFloor = rawSensor.readNoiseLevel();
 
-    response->printf("noiseFloor: %u\n", settings.noiseFloor);
+    response->printf("noiseFloor: %u\n", sensorSettings.noiseFloor);
 
     return;
   }
 
   if (argName.equalsIgnoreCase("spikeRejection") == 1) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
-    settings.spikeRejection = rawSensor.readSpikeRejection();
+    sensorSettings.spikeRejection = rawSensor.readSpikeRejection();
 
-    response->printf("spikeRejection: %u\n", settings.spikeRejection);
+    response->printf("spikeRejection: %u\n", sensorSettings.spikeRejection);
 
     return;
   }
@@ -589,9 +595,9 @@ void getSetting(char *args, Stream *response) {
   if (argName.equalsIgnoreCase("reportDisturber") == 1) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
 
-    settings.reportDisturber = !((bool) rawSensor.readMaskDisturber());
+    sensorSettings.reportDisturber = !((bool) rawSensor.readMaskDisturber());
 
-    response->printf("reportDisturber: %s\n", settings.reportDisturber ? "true" : "false");
+    response->printf("reportDisturber: %s\n", sensorSettings.reportDisturber ? "true" : "false");
 
     return;
   }
@@ -682,6 +688,7 @@ void setup()
   wcli.add("clear", &clearStorage, "\t\tClear non-volatile storage.");
   wcli.add("set", &setSetting, "\t\t<name> <value> Set lightning sensor setting.");
   wcli.add("get", &getSetting, "\t\t<name> Get lightning sensor setting.");
+  wcli.add("save", &saveSettings, "\tSave sensor settings to non-volitile storage.");
   wcli.add("displayOsc", &displayOsc, "\t<value> <osc>");
   wcli.add("dig", &dig, "\t<hostname> Lookup a hostname");
 
@@ -704,10 +711,9 @@ void setup()
     this will turn off the separate 3.3V regulator that powers the QT connector's red wire
   */
 
-  settings.tuningCapacitor = TUNING_CAPACITOR_DEFAULT;
-  settings.reportDisturber = REPORT_DISTURBER_DEFAULT;
+  sensorPreferences.load(&sensorSettings);
 
-  if (!sensor.begin(settings)) {
+  if (!sensor.begin(sensorSettings)) {
     setErrorStatus(true);
   }
 
