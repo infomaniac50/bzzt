@@ -101,11 +101,27 @@ void checkSensor()
       StaticJsonDocument<256> doc;
 
       doc["type"] = statusToString(event.type);
-      doc["distance"] = distanceToString(event.distance);
+      doc["distance"] = event.distance;
       doc["energy"] = event.energy;
-      doc["timestamp"] = ((float) event.timestamp.tv_sec) + (event.timestamp.tv_usec / 1000000);
 
-      mqtt.beginPublish("lightning/event", measureJson(doc), false);
+      DateTimeParts timestampParts = DateTimeParts::from(event.timestamp.tv_sec);
+      String timestamp = String(timestampParts.format("%FT%T"));
+      timestamp.concat('.');
+      char microseconds[7] = { 0, };
+      snprintf(microseconds, 6, "%d", event.timestamp.tv_usec);
+      timestamp.concat(microseconds);
+      timestamp.concat(timestampParts.format("%z"));
+
+      doc["timestamp"] = timestamp;
+
+      String stateTopic = "lightning/bzzt_";
+      char mac[17] = { 0, };
+
+      snprintf(mac, sizeof(mac), "%016llx", ESP.getEfuseMac());
+      stateTopic.concat(mac);
+      stateTopic.concat("/event");
+
+      mqtt.beginPublish(stateTopic.c_str(), measureJson(doc), false);
       BufferingPrint bufferedClient(mqtt, 32);
       serializeJson(doc, bufferedClient);
       bufferedClient.flush();
