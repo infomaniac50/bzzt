@@ -119,6 +119,93 @@ void checkSensor()
   }
 }
 
+bool discovery(void *) {
+  StaticJsonDocument<1024> config;
+  String discoveryTopic = "homeassistant/device/bzzt_";
+  String identifier = "bzzt_";
+  char mac[17] = { 0, };
+
+  snprintf(mac, sizeof(mac), "%016llx", ESP.getEfuseMac());
+  identifier.concat(mac);
+  discoveryTopic.concat(mac);
+  discoveryTopic.concat("/config");
+
+  if (mqtt.connected()) {
+    JsonObject device = config["device"].to<JsonObject>();
+    device["identifiers"][0] = identifier;
+    device["name"] = "BZZT";
+    config["origin"]["name"] = "bzzt2mqtt";
+
+    JsonObject components = config["components"].to<JsonObject>();
+    // Interrupt Type
+    JsonObject cmpType = components["bzzt_type"].to<JsonObject>();
+    cmpType["platform"] = "sensor";
+    cmpType["name"] = "Lightning Type";
+    cmpType["device_class"] = "enum";
+
+    JsonArray cmpTypeOptions = cmpType["options"].to<JsonArray>();
+    cmpTypeOptions.add(statusToString(INTERRUPT_STATUS::LIGHTNING));
+    cmpTypeOptions.add(statusToString(INTERRUPT_STATUS::DISTURBER_DETECT));
+    cmpTypeOptions.add(statusToString(INTERRUPT_STATUS::NOISE_TO_HIGH));
+    cmpTypeOptions.add(statusToString(0)); // No Event
+
+    cmpType["value_template"] = "{{ value_json.type }}";
+    String typeId = String(identifier);
+    typeId.concat("_i");
+    cmpType["unique_id"] = typeId;
+
+    // Lightning Distance
+    JsonObject cmpDistance = components["bzzt_distance"].to<JsonObject>();
+    cmpDistance["platform"] = "sensor";
+    cmpDistance["name"] = "Lightning Distance";
+    cmpDistance["device_class"] = "distance";
+    cmpDistance["unit_of_measurement"] = "km";
+    cmpDistance["value_template"] = "{{ value_json.distance }}";
+    String distanceId = String(identifier);
+    distanceId.concat("_d");
+    cmpDistance["unique_id"] = distanceId;
+
+    // A 20 bit value that is the 'energy' of the lightning strike.
+    // This is only a pure value that doesn't have any physical meaning.
+    JsonObject cmpEnergy = components["bzzt_energy"].to<JsonObject>();
+    cmpEnergy["platform"] = "sensor";
+    cmpEnergy["name"] = "Lightning Energy";
+    cmpEnergy["value_template"] = "{{ value_json.energy }}";
+    String energyId = String(identifier);
+    energyId.concat("_e");
+    cmpEnergy["unique_id"] = energyId;
+
+    // A unix timestamp with fractional seconds of exactly when the strike happened.
+    JsonObject cmpTimestamp = components["bzzt_timestamp"].to<JsonObject>();
+    config["components"]["bzzt_timestamp"] = cmpTimestamp;
+    cmpTimestamp["platform"] = "sensor";
+    cmpTimestamp["name"] = "Lightning Timestamp";
+    cmpTimestamp["device_class"] = "timestamp";
+    cmpTimestamp["value_template"] = "{{ value_json.timestamp }}";
+    String timestampId = String(identifier);
+    timestampId.concat("_t");
+    cmpTimestamp["unique_id"] = timestampId;
+
+    String stateTopic = "lightning/bzzt_";
+    stateTopic.concat(mac);
+    stateTopic.concat("/event");
+
+    config["state_topic"] = stateTopic;
+
+    mqtt.beginPublish(discoveryTopic.c_str(), measureJson(config), false);
+    BufferingPrint bufferedClient(mqtt, 32);
+    serializeJson(config, bufferedClient);
+    bufferedClient.flush();
+    mqtt.endPublish();
+
+    setErrorStatus(false);
+  } else {
+    setErrorStatus(true);
+  }
+
+  return true; // Should timer task repeat? true
+}
+
 void onPubSubCallback(char *topic, byte *payload, unsigned int length)
 {
   if (strcmp(topic, "lightning/ping") == 0)
@@ -609,6 +696,9 @@ void setup()
   if (!sensor.begin(settings)) {
     setErrorStatus(true);
   }
+
+  // Run HomeAssistant discovery every minute.
+  timer.every(60000, discovery);
 }
 
 void loop()
