@@ -299,7 +299,7 @@ void reboot(char *args, Stream *response) {
 void printCurrentDate(char *args, Stream *response) {
   if (DateTime.isTimeValid()) {
     String currentTime = DateTime.format(DEFAULT_DATETIME_FORMAT);
-    response->printf("The system clock is valid.\n%s\n", currentTime.c_str());
+    response->printf("The system clock is valid.\r\n%s\n", currentTime.c_str());
   } else {
     response->println("The system clock is not valid.");
   }
