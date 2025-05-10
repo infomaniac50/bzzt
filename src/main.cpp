@@ -350,12 +350,12 @@ void setSetting(char *args, Stream *response) {
     String argVal = wcli.parseArgument(args);
 
     argVal.trim();
-  
+
     if (argVal.length() == 0) {
       response->println("Missing argument <BROKER_HOSTNAME>");
       return;
     }
-  
+
     systemSettings.brokerHostname = argVal;
     response->println("\nMQTT broker set to " + argVal);
     response->println("Please save and reboot to apply the change.");
@@ -367,12 +367,12 @@ void setSetting(char *args, Stream *response) {
     String argVal = wcli.parseArgument(args);
 
     argVal.trim();
-  
+
     if (argVal.length() == 0) {
       response->println("Missing argument <SYSTEM_HOSTNAME>");
       return;
     }
-  
+
     systemSettings.systemHostname = argVal;
     response->println("\nSystem hostname set to " + argVal);
     response->println("Please save and reboot to apply the change.");
@@ -384,12 +384,12 @@ void setSetting(char *args, Stream *response) {
     String argVal = wcli.parseArgument(args);
 
     argVal.trim();
-  
+
     if (argVal.length() == 0) {
       response->println("Missing argument <TIMESERVER1>");
       return;
     }
-  
+
     systemSettings.timeServer1 = argVal;
     response->println("\nFirst timeserver set to " + argVal);
     response->println("Please save and reboot to apply the change.");
@@ -401,12 +401,12 @@ void setSetting(char *args, Stream *response) {
     String argVal = wcli.parseArgument(args);
 
     argVal.trim();
-  
+
     if (argVal.length() == 0) {
       response->println("Missing argument <TIMESERVER2>");
       return;
     }
-  
+
     systemSettings.timeServer2 = argVal;
     response->println("\nSecond timeserver set to " + argVal);
     response->println("Please save and reboot to apply the change.");
@@ -418,12 +418,12 @@ void setSetting(char *args, Stream *response) {
     String argVal = wcli.parseArgument(args);
 
     argVal.trim();
-  
+
     if (argVal.length() == 0) {
       response->println("Missing argument <TIMESERVER3>");
       return;
     }
-  
+
     systemSettings.timeServer3 = argVal;
     response->println("\nThird timeserver set to " + argVal);
     response->println("Please save and reboot to apply the change.");
@@ -616,19 +616,19 @@ void getSetting(char *args, Stream *response) {
 
     return;
   }
-  
+
   if (argName.equalsIgnoreCase("timeServer1")) {
     response->printf("timeServer1: %s\n", systemSettings.timeServer1);
 
     return;
   }
-  
+
   if (argName.equalsIgnoreCase("timeServer2")) {
     response->printf("timeServer2: %s\n", systemSettings.timeServer2);
 
     return;
   }
-  
+
   if (argName.equalsIgnoreCase("timeServer3")) {
     response->printf("timeServer3: %s\n", systemSettings.timeServer3);
 
@@ -806,7 +806,7 @@ void setup()
     Serial.println("WiFi is not configured. Please use nmcli to setup WiFi now.");
     Shellminator::setTerminalCharacterColor(&Serial, Shellminator::REGULAR, Shellminator::WHITE);
   }
-  
+
   if (systemSettings.brokerHostname.isEmpty()) {
     Shellminator::setTerminalCharacterColor(&Serial, Shellminator::REGULAR, Shellminator::YELLOW);
     Serial.print("The MQTT broker is not set. Please use " );
