@@ -522,8 +522,6 @@ void getSetting(char *args, Stream *response) {
     return;
   }
 
-  String argValue = operands.second();
-
   if (argName.equalsIgnoreCase("sensorLocation")) {
     SparkFun_AS3935 rawSensor = sensor.getSensor();
     settings.sensorLocation = rawSensor.readIndoorOutdoor();
